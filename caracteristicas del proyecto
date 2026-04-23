@@ -1,0 +1,61 @@
+Kiosco de un colegio
+
+“Sistema web para gestión de compras en kioscos escolares con control parental, pedidos programados y seguimiento de consumo en tiempo real.”
+
+Los chicos tienen una tarjeta ¿?
+
+ Los padres cargan saldo
+
+Los padres cargan las restricciones (que puede o no puede consumir)
+
+A los padres les llega una notif con los gastos detallados
+
+ Roles: padres – admin – kiosquero
+
+Padres:
+
+Pueden realizar pedido de antemano
+
+Cargan en la pagina los datos del nene (nombre- apellido- curso) + foto tipo 4x4
+
+Balance mensual de los gastos
+
+Programar pedidos semanales para retirar por recreo y día.
+
+Historial de pedidos. Desde acá puede repetir
+
+Que se pueda cancelar o reprogramar pedido
+
+Si el nene no retiró, el sistema le avisa al padre
+
+Que en algún momento del día le llegue un mail para confirmar pedido o reprogramar ¿¿??
+
+
+
+Admin:
+
+Carga stock (ABM)
+
+Asignar categorías a los productos (tipo tienda, filtro, carrito, etc..)
+
+Consultar historial de ventas (gráficos, etc..) que productos se vendieron, etc..
+
+
+
+Kiosquero:
+
+Revisa pedidos (arma- completa- entrega)
+
+Cuando el kiosquero marca como entregado, se le envía al padre el boleto de la compra
+
+¿? Pasarela de pagos
+
+
+
+Ideas: carga de informacion alimenticia (dietas, reestricciones) analizadas con revisar que alimentos acordes se venden en el kiosco.
+
+Qr generado por el padre para  que el niño retire los pedidos
+
+Saldo extra para compras adicionales
+
+Mandar ofertas: produxto proximos a vencer, productos mas comprados por el usuario(ofertas especificas)
