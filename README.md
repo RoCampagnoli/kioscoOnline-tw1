@@ -43,6 +43,8 @@ Docker es una plataforma de contenedores que permite empaquetar aplicaciones con
 * Para instalar sobre Linux, alcanza con instalar `Docker Engine` siguiendo esta [guía](https://docs.docker.com/engine/install/ubuntu/). También es posible instalar `Docker Desktop` (incluye Docker Engine).
 
 ## 1. ¿Cómo iniciar el proyecto?
+Copiar en la raíz del proyecto el archivo `.env.example` y renombrarlo como `.env`.
+
 > Necesitamos previamente una base de datos mysql en el puerto 3306.
 ```shell
 # Levantamos un BBDD con docker
