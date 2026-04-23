@@ -1,5 +1,6 @@
 package com.tallerwebi.config;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import java.util.Properties;
 import javax.sql.DataSource;
 import org.springframework.context.annotation.Bean;
@@ -15,19 +16,14 @@ public class HibernateConfig {
 
   @Bean
   public DataSource dataSource() {
+    Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
     DriverManagerDataSource dataSource = new DriverManagerDataSource();
 
-    String dbHost = System.getenv("DB_HOST");
-    String dbPort = System.getenv("DB_PORT");
-    String dbName = System.getenv("DB_NAME");
-    String dbUser = System.getenv("DB_USER");
-    String dbPassword = System.getenv("DB_PASSWORD");
-
-    if (dbHost == null) dbHost = "localhost";
-    if (dbPort == null) dbPort = "3306";
-    if (dbName == null) dbName = "tallerwebi";
-    if (dbUser == null) dbUser = "user";
-    if (dbPassword == null) dbPassword = "user";
+    String dbHost = dotenv.get("DB_HOST", "localhost");
+    String dbPort = dotenv.get("DB_PORT", "3306");
+    String dbName = dotenv.get("DB_NAME", "tallerwebi");
+    String dbUser = dotenv.get("DB_USER", "user");
+    String dbPassword = dotenv.get("DB_PASSWORD", "user");
 
     String url = String.format(
       "jdbc:mysql://%s:%s/%s?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true",

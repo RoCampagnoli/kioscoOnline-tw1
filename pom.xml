@@ -17,9 +17,11 @@
         <junit.version>5.9.0</junit.version>
         <mockito.version>5.3.1</mockito.version>
         <hibernate.version>5.4.24.Final</hibernate.version>
+        <mysql-connector.version>8.0.33</mysql-connector.version>
         <playwright.version>1.36.0</playwright.version>
         <hsqldb.version>2.3.2</hsqldb.version>
         <checkstyle.version>3.2.1</checkstyle.version>
+        <dotenv.version>3.0.0</dotenv.version>
     </properties>
 
     <dependencies>
@@ -51,7 +53,7 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.33</version>
+            <version>${mysql-connector.version}</version>
         </dependency>
 
         <dependency>
@@ -106,6 +108,12 @@
             <artifactId>playwright</artifactId>
             <version>${playwright.version}</version>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>dotenv-java</artifactId>
+            <version>${dotenv.version}</version>
         </dependency>
         <!-- compile only, deployed container will provide this -->
         <!--
