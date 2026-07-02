@@ -7,6 +7,9 @@ import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.tallerwebi.dominio.Carrito.RepositorioCarrito;
+import com.tallerwebi.dominio.Hijos.RepositorioHijo;
+import com.tallerwebi.dominio.Pedidos.RepositorioPedido;
 import com.tallerwebi.dominio.SubidaDeImgs.ServicioImagenes;
 import com.tallerwebi.dominio.Usuario.*;
 import com.tallerwebi.dominio.excepcion.NoSePudoGuardarInformacionException;
@@ -20,13 +23,26 @@ public class ServicioUsuarioTest {
   private ServicioImagenes servicioImagenesMock;
   private ServicioUsuario servicioUsuario;
   private RepositorioUsuario repositorioUsuarioMock;
+  private RepositorioHijo repositorioHijoMock;
+  private RepositorioCarrito repositorioCarritoMock;
+  private RepositorioPedido repositorioPedidoMock;
 
   @BeforeEach
   public void init() {
-    this.repositorioUsuarioMock = mock(RepositorioUsuario.class);
-    this.servicioImagenesMock = mock(ServicioImagenes.class);
+    repositorioUsuarioMock = mock(RepositorioUsuario.class);
+    servicioImagenesMock = mock(ServicioImagenes.class);
+    repositorioHijoMock = mock(RepositorioHijo.class);
+    repositorioCarritoMock = mock(RepositorioCarrito.class);
+    repositorioPedidoMock = mock(RepositorioPedido.class);
+
     this.servicioUsuario =
-      new ServicioUsuarioImpl(this.repositorioUsuarioMock, servicioImagenesMock);
+      new ServicioUsuarioImpl(
+        repositorioUsuarioMock,
+        servicioImagenesMock,
+        repositorioHijoMock,
+        repositorioCarritoMock,
+        repositorioPedidoMock
+      );
   }
 
   @Test
@@ -90,5 +106,40 @@ public class ServicioUsuarioTest {
       NoSePudoGuardarInformacionException.class,
       () -> servicioUsuario.actualizarFoto(99L, fotoMock)
     );
+  }
+
+  @Test
+  public void dadoUnUsuarioExistenteCuandoSeEliminaLaCuentaEntoncesSeEliminanTodosSusDatos() {
+    Long idUsuario = 1L;
+
+    Usuario usuario = new Usuario();
+
+    when(repositorioUsuarioMock.buscarUsuarioPorId(idUsuario)).thenReturn(usuario);
+
+    servicioUsuario.eliminarCuenta(idUsuario);
+
+    verify(repositorioHijoMock).eliminarPorUsuario(idUsuario);
+    verify(repositorioCarritoMock).eliminarPorUsuario(idUsuario);
+    verify(repositorioPedidoMock).eliminarPorUsuario(idUsuario);
+
+    verify(repositorioUsuarioMock).buscarUsuarioPorId(idUsuario);
+    verify(repositorioUsuarioMock).eliminar(usuario);
+  }
+
+  @Test
+  public void dadoUnUsuarioInexistenteCuandoSeEliminaLaCuentaEntoncesNoSeDebeEliminarElUsuario() {
+    Long idUsuario = 1L;
+
+    when(repositorioUsuarioMock.buscarUsuarioPorId(idUsuario)).thenReturn(null);
+
+    servicioUsuario.eliminarCuenta(idUsuario);
+
+    verify(repositorioHijoMock).eliminarPorUsuario(idUsuario);
+    verify(repositorioCarritoMock).eliminarPorUsuario(idUsuario);
+    verify(repositorioPedidoMock).eliminarPorUsuario(idUsuario);
+
+    verify(repositorioUsuarioMock).buscarUsuarioPorId(idUsuario);
+
+    verify(repositorioUsuarioMock, never()).eliminar(any());
   }
 }

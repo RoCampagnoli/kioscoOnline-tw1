@@ -1,8 +1,9 @@
-<!DOCTYPE HTML>
+﻿<!DOCTYPE HTML>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="utf-8">
+    <link rel="icon" type="image/png" href="https://res.cloudinary.com/dqrka5zry/image/upload/v1782952771/WhatsApp_Image_2026-07-01_at_9.28.32_PM_oplcqj.jpg" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Mis Hijos - KioNet</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -77,7 +78,7 @@
                     <form th:action="@{/eliminarHijo}" method="post" style="display: inline;"
                         onsubmit="return confirm('¿Estás seguro de que deseas dar de baja a este hijo?')">
                         <input type="hidden" name="hijoId" th:value="${hijo.id}" />
-                        <button type="submit" class="btn-trash btn btn-danger d-flex align-items-center mt-4 mb-3"
+                        <button type="submit" class="boton-eliminarHijo d-flex align-items-center mt-4 mb-3"
                                 aria-label="Eliminar HIJO">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
                                  fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -147,9 +148,11 @@
                                name="aliasRetiro"
                                placeholder="Ej: ROJO.GATO.TREN"
                                oninput="this.value = this.value.toUpperCase()"
+                               maxlength="30"
                                style="text-transform: uppercase;"
-                               pattern="[A-Z0-9\.]+"
-                               title="El alias debe contener solo letras mayúsculas, números y puntos."
+                               pattern="^[A-Za-z0-9]+(\.[A-Za-z0-9]+)*$"
+                               autocomplete="off"
+                               title="El alias solo puede contener letras, números y puntos. No puede comenzar ni terminar con punto ni contener espacios."
                                required>
 
                         <div class="modal-alias-btn-container">
@@ -215,12 +218,27 @@
 
                         <div class="campo-edicion">
                             <span class="dato-label">Foto de perfil (Rostro visible)</span>
-                            <input type="file" name="fotoPerfilHijo" class="input-foto-hijo" accept="image/*">
+
+                            <div class="foto-input-wrap">
+                                <input type="file" name="fotoPerfilHijo" id="agregarFotoInput" class="input-foto-hijo" accept="image/*">
+                                <button type="button" class="btn-quitar-foto" style="display:none;" aria-label="Quitar foto seleccionada">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="16" height="16">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
                             <div class="contenedor-error-foto alerta-mensaje alerta-error" style="display: none; margin-top: 10px;">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="20" height="20">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
                                 </svg>
                                 <span class="texto-error-foto"></span>
+                            </div>
+                            <div class="contenedor-exito-foto alerta-mensaje alerta-exito" style="display: none; margin-top: 10px;">
+                                <span class="texto-exito-foto"></span>
+                            </div>
+                            <div class="contenedor-validando-foto alerta-mensaje alerta-informacion" style="display: none; margin-top: 10px;">
+                                <span class="spinner-foto"></span>
+                                <span class="texto-validando-foto">Validando foto, por favor esperá...</span>
                             </div>
                         </div>
 
@@ -292,7 +310,14 @@
 
                     <div class="campo-edicion" style="margin-top: 15px;">
                         <span class="dato-label">Foto de Perfil (Rostro visible)</span>
-                        <input type="file" name="fotoPerfilH" id="editFotoInput" class="input-foto-hijo" accept="image/*">
+                        <div class="foto-input-wrap">
+                            <input type="file" name="fotoPerfilH" id="editFotoInput" class="input-foto-hijo" accept="image/*">
+                            <button type="button" class="btn-quitar-foto" style="display:none;" aria-label="Quitar foto seleccionada">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="16" height="16">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
 
                         <div class="contenedor-error-foto alerta-mensaje alerta-error" style="display: none; margin-top: 10px;">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="20" height="20">
@@ -300,17 +325,27 @@
                             </svg>
                             <span class="texto-error-foto"></span>
                         </div>
+                        <div class="contenedor-exito-foto alerta-mensaje alerta-exito" style="display: none; margin-top: 10px;">
+                            <span class="texto-exito-foto"></span>
+                        </div>
+                        <div class="contenedor-validando-foto alerta-mensaje alerta-informacion" style="display: none; margin-top: 10px;">
+                            <span class="spinner-foto"></span>
+                            <span class="texto-validando-foto">Validando foto, por favor esperá...</span>
+                        </div>
+
                     </div>
                     <div class="campo-edicion" style="margin-top: 15px;">
                         <span class="dato-label">Alias de Retiro</span>
                         <input type="text"
                                name="aliasRetiro"
                                id="editAlias"
+                               maxlength="20"
                                placeholder="Ej: ROJO.GATO.TREN"
+                               autocomplete="off"
                                oninput="this.value = this.value.toUpperCase()"
                                style="text-transform: uppercase;"
-                               pattern="[A-Z0-9\.]+"
-                               title="El alias debe contener solo letras mayúsculas, números y puntos.">
+                               pattern="^[A-Za-z0-9]+(\.[A-Za-z0-9]+)*$"
+                               title="El alias solo puede contener letras, números y puntos. No puede comenzar ni terminar con punto ni contener espacios.">
                         <small class="texto-ayuda">
                             Debe ser único para cada alumno.
                         </small>

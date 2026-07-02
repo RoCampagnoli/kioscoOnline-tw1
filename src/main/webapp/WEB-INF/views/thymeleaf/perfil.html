@@ -1,8 +1,9 @@
-<!DOCTYPE HTML>
+﻿<!DOCTYPE HTML>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="utf-8">
+    <link rel="icon" type="image/png" href="https://res.cloudinary.com/dqrka5zry/image/upload/v1782952771/WhatsApp_Image_2026-07-01_at_9.28.32_PM_oplcqj.jpg" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Mi Perfil - KioNet</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,14 +20,12 @@
 <body>
 <div class="container-fluid">
 
-    <div th:replace="fragmentos/header :: header"></div>
+    <div th:if="${usuario.rol == 'CLIENTE'}" th:replace="fragmentos/header :: header"></div>
 
     <main class="main">
         <section class="panel-cliente">
             <div th:replace="fragmentos/panelIzqCliente :: panelCliente"></div>
-
             <a th:href="@{/home}" class="btn-volver"> Ir a Tienda</a>
-
         </section>
 
 
@@ -47,12 +46,14 @@
                     Editar
                 </button>
             </div>
+
             <div th:if="${mensajeError != null}" class="alerta-mensaje alerta-error">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="20" height="20">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
                 </svg>
                 <span th:text="${mensajeError}">Hubo un error</span>
             </div>
+
             <div th:if="${exito}" class="alerta-mensaje alerta-exito">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="20" height="20">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -61,7 +62,6 @@
             </div>
 
             <div class="perfil-card">
-
 
                 <div class="perfil-card-header">
                     <img th:if="${usuario.fotoPerfil != null}" th:src="${usuario.fotoPerfil}" alt="foto de perfil" class="perfil-avatar">
@@ -72,6 +72,15 @@
                             <span th:text="${usuario.apellido}"></span>
                         </h2>
                         <p class="perfil-email-sub" th:text="${usuario.email}"></p>
+                        <span th:if="${usuario.password == null}" class="badge-google">
+        <svg width="12" height="12" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        Sesión iniciada con Google
+    </span>
                     </div>
                 </div>
                 <div id="perfil-datos">  <!-- este es el que recibe en-edicion -->
@@ -95,14 +104,12 @@
                         </div>
                         <div class="perfil-dato">
                             <span class="dato-label">Foto de perfil</span>
-                            <img
-                                    th:src="${usuario.fotoPerfil != null ? usuario.fotoPerfil : '/spring/imagenes/imagenesDefault/default-user.jpg'}"
-                                    th:data-original="${usuario.fotoPerfil != null ? usuario.fotoPerfil : '/imagenes/imagenesDefault/default-user.jpg'}"
-
-                                    alt="preview"
-                                    class="foto-preview" />
+                            <img th:src="${usuario.fotoPerfil != null ? usuario.fotoPerfil : '/spring/imagenes/imagenesDefault/default-user.jpg'}"
+                                 th:data-original="${usuario.fotoPerfil != null ? usuario.fotoPerfil : '/imagenes/imagenesDefault/default-user.jpg'}"
+                                 alt="preview"
+                                 class="foto-preview" />
                         </div>
-                    </div><!--fin vista lectura-->
+                    </div>
 
                     <!-- VISTA EDICIÓN -->
                     <div class="vista-edicion">
@@ -110,7 +117,14 @@
 
                             <div class="campo-edicion">
                                 <span class="dato-label">Email</span>
-                                <input type="email" name="email"
+                                <input th:if="${usuario.password == null}"
+                                       type="email" name="email"
+                                       th:value="${usuario.email}"
+                                       placeholder="tu@email.com"
+                                       readonly
+                                       style="opacity: 0.6; cursor: not-allowed;" />
+                                <input th:unless="${usuario.password == null}"
+                                       type="email" name="email"
                                        th:value="${usuario.email}"
                                        placeholder="tu@email.com" />
                             </div>
@@ -144,6 +158,69 @@
                                 <button type="submit" class="btn-guardar">Guardar</button>
                             </div>
 
+                        </form>
+
+                        <!-- CAMBIAR CONTRASEÑA (solo usuarios no-Google) -->
+                        <div th:if="${usuario.password != null}" class="cambiar-contrasenia-zona">
+                            <p class="cambiar-contrasenia-link" onclick="abrirModalContrasenia()">
+                                ¿Querés cambiar tu contraseña?
+                            </p>
+                        </div>
+
+                        <!-- ZONA ELIMINAR CUENTA -->
+                        <div class="eliminar-cuenta-zona">
+                            <p class="eliminar-cuenta-link" onclick="abrirModalEliminar()">
+                                ¿Querés eliminar tu cuenta?
+                            </p>
+                        </div>
+
+                    </div><!-- FIN vista-edicion -->
+                </div>
+            </div>
+
+            <!-- MODAL CAMBIAR CONTRASEÑA -->
+            <div th:if="${usuario.password != null}" id="modalCambiarContrasenia" class="modal-overlay">
+                <div class="modal-cuerpo">
+                    <h3 class="modal-titulo">Cambiar contraseña</h3>
+                    <form th:action="@{/perfil/cambiar-contrasenia}" method="post" class="modal-form">
+                        <input type="password" name="contraseniaActual"
+                               placeholder="Contraseña actual" class="modal-input" required />
+                        <input type="password" name="contraseniaNueva"
+                               placeholder="Nueva contraseña" class="modal-input" required />
+                        <input type="password" name="confirmarContrasenia"
+                               placeholder="Confirmar nueva contraseña" class="modal-input" required />
+                        <div class="modal-acciones">
+                            <button type="button" class="btn-cancelar-modal" onclick="cerrarModalContrasenia()">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="btn-guardar">
+                                Guardar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- MODAL ELIMINAR CUENTA -->
+            <div id="modalEliminarCuenta" class="modal-overlay">
+                <div class="modal-cuerpo">
+                    <h3 class="modal-titulo">Eliminar cuenta</h3>
+                    <p class="modal-descripcion">
+                        Esta acción es permanente. Para confirmar, escribí exactamente:<br>
+                        <strong>quiero eliminar mi cuenta</strong>
+                    </p>
+                    <input id="inputConfirmacionEliminar" type="text"
+                           placeholder="Escribí la frase aquí"
+                           class="modal-input"
+                           oninput="verificarFrase(this.value)" />
+                    <div class="modal-acciones">
+                        <button class="btn-cancelar-modal" onclick="cerrarModalEliminar()">
+                            Cancelar
+                        </button>
+                        <form th:action="@{/perfil/eliminar-cuenta}" method="post">
+                            <button id="btnEliminarCuenta" type="submit" disabled class="btn-eliminar">
+                                Eliminar cuenta
+                            </button>
                         </form>
                     </div>
                 </div>

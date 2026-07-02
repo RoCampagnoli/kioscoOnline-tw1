@@ -1,8 +1,7 @@
 ﻿<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <body>
-<header class="main-header" th:fragment="header">
-
+<header class="main-header" th:fragment="headerKiosquero">
     <!-- Botón hamburguesa (solo mobile) -->
     <button class="btn-hamburguesa" id="btnHamburguesa" aria-label="Menú">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -11,34 +10,26 @@
             <line x1="3" y1="18" x2="21" y2="18"/>
         </svg>
     </button>
-
-    <a class="navbar-brand" th:href="@{/home}">
+    <a class="navbar-brand" th:href="@{/homeKiosquero}">
         <img th:src="'https://res.cloudinary.com/dqrka5zry/image/upload/v1780531490/KioNet_imp3c0.png'" alt="logo">
     </a>
 
+    <!--BUSQUEDA POR NRO DE PEDIDO!-->
     <div class="header-center">
-        <form th:action="@{/home}" method="GET" class="search-form">
+        <form th:action="@{/homeKiosquero}" method="GET" class="search-form">
             <div class="search-wrapper">
-                <input type="search" name="busqueda" class="form-control-search" placeholder="Buscar productos..." th:value="${param.busqueda}">
+                <input type="search" name="busqueda" class="form-control-search" placeholder="Buscar por nombre del alumno o ID del pedido..." th:value="${param.busquedaPedido}">
                 <button type="submit" class="btn-search">Buscar</button>
             </div>
         </form>
     </div>
 
     <div class="header-right">
-        <a href="/spring/distribucion" class="btn-carrito">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="9" cy="21" r="1"/>
-                <circle cx="20" cy="21" r="1"/>
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 01.98 1.61h9.72a2 2 0 0 01.98-1.61L23 6H6"/>
-            </svg>
-            <span class="carrito-texto">Ver carrito</span>
-        </a>
-
         <form th:action="@{/logout}" method="post" class="logout-form-header">
             <button type="submit" class="btn-logout">Cerrar sesión</button>
         </form>
     </div>
+
 </header>
 </body>
 </html>

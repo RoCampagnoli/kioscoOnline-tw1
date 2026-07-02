@@ -2,6 +2,7 @@ package com.tallerwebi.dominio.Pedidos;
 
 import com.tallerwebi.dominio.Hijos.Hijo;
 import com.tallerwebi.dominio.Usuario.Usuario;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -26,12 +27,20 @@ public class Pedido {
   @JoinColumn(name = "usuario_id")
   private Usuario usuario;
 
-  @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+  @OneToMany(
+    mappedBy = "pedido",
+    cascade = CascadeType.ALL,
+    fetch = FetchType.EAGER,
+    orphanRemoval = true
+  )
   private List<ItemPedido> items;
 
   @Column(nullable = false)
   @Temporal(TemporalType.TIMESTAMP)
   private Date fecha;
+
+  @Column(name = "fecha_retiro", nullable = false)
+  private LocalDate fechaRetiro;
 
   @Column(nullable = false)
   private Double subtotal;
@@ -39,7 +48,7 @@ public class Pedido {
   public Pedido() {
     this.items = new ArrayList<>();
     this.fecha = new Date();
-    this.estado = EstadoPedido.PAGO_PENDIENTE; // ← siempre nace así
+    this.estado = EstadoPedido.EN_CARRITO; // ← siempre nace así
   }
 
   public void agregarItem(ItemPedido item) {
@@ -89,6 +98,14 @@ public class Pedido {
 
   public void setFecha(Date fecha) {
     this.fecha = fecha;
+  }
+
+  public LocalDate getFechaRetiro() {
+    return fechaRetiro;
+  }
+
+  public void setFechaRetiro(LocalDate fechaRetiro) {
+    this.fechaRetiro = fechaRetiro;
   }
 
   public Double getSubtotal() {
