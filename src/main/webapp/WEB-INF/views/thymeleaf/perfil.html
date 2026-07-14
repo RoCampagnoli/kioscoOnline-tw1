@@ -104,8 +104,8 @@
                         </div>
                         <div class="perfil-dato">
                             <span class="dato-label">Foto de perfil</span>
-                            <img th:src="${usuario.fotoPerfil != null ? usuario.fotoPerfil : '/spring/imagenes/imagenesDefault/default-user.jpg'}"
-                                 th:data-original="${usuario.fotoPerfil != null ? usuario.fotoPerfil : '/imagenes/imagenesDefault/default-user.jpg'}"
+                            <img th:src="${usuario.fotoPerfil != null ? usuario.fotoPerfil : 'https://res.cloudinary.com/dqrka5zry/image/upload/v1780525781/default-user_lk0vzd.jpg'}"
+                                 th:data-original="${usuario.fotoPerfil != null ? usuario.fotoPerfil : 'https://res.cloudinary.com/dqrka5zry/image/upload/v1780525781/default-user_lk0vzd.jpg'}"
                                  alt="preview"
                                  class="foto-preview" />
                         </div>

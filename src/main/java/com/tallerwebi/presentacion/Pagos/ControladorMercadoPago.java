@@ -123,14 +123,17 @@ public class ControladorMercadoPago {
       .sum();
 
     String mensaje =
-      "Hola " +
+      "¡Hola " +
       usuario.getNombre() +
-      "\n\n" +
-      "Recibimos correctamente tu pago.\n\n" +
-      "Total abonado: $" +
+      "!\n\n" +
+      "✅ Confirmamos que recibimos correctamente el pago de tu pedido en KioNet.\n\n" +
+      "💳 Total abonado: $" +
       total +
       "\n\n" +
-      "Gracias por utilizar Kionet.";
+      "Tu pedido ya comenzó a procesarse y podrás seguir su estado desde la sección \"Mis Pedidos\" de la aplicación.\n\n" +
+      "¡Gracias por confiar en KioNet!\n\n" +
+      "Saludos,\n" +
+      "Equipo de KioNet";
 
     servicioEmail.enviarEmail(usuario.getEmail(), "Pago recibido - Kionet", mensaje);
 
