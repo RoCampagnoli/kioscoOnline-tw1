@@ -8,6 +8,7 @@ import com.tallerwebi.dominio.Usuario.Usuario;
 import com.tallerwebi.dominio.excepcion.ProductoNoEncontradoException;
 import com.tallerwebi.dominio.excepcion.ProductoSinStockException;
 import java.util.List;
+import java.util.stream.Collectors; // 👈 agregar este import
 import javax.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,8 @@ public class CarritoControlador {
 
   private final ServicioCarrito servicioCarrito;
   private final ServicioPedido servicioPedido;
+  private static final int UN_SOLO_PEDIDO = 1;
+
   private static final String USUARIO = "USUARIO";
   private static final String CARRITO = "carrito";
   private static final String PRODUCTO_ID = "productoId";
@@ -122,5 +125,71 @@ public class CarritoControlador {
     servicioCarrito.disminuirCantidad(productoId, usuario.getId());
 
     return "redirect:/carrito";
+  }
+
+  @RequestMapping(path = "/carrito/pagar-despues", method = RequestMethod.POST)
+  public ModelAndView pagarDespues(HttpSession session, RedirectAttributes flash) {
+    Usuario usuario = (Usuario) session.getAttribute(USUARIO);
+    if (usuario == null) {
+      return new ModelAndView("redirect:/login");
+    }
+
+    List<Pedido> pedidosEnCarrito = servicioPedido.obtenerPedidosEnCarrito(usuario.getId());
+
+    if (pedidosEnCarrito.isEmpty()) {
+      flash.addFlashAttribute("errorDistribucion", "No hay pedidos para dejar pendientes de pago");
+      return new ModelAndView("redirect:/distribucion");
+    }
+
+    servicioPedido.marcarPedidosEnCarritoComoPendientes(usuario.getId());
+    // Mismo criterio que en /pagar: ya están comprometidos a un pedido real, dejan de ser "candidatos"
+    servicioCarrito.vaciarCarrito(usuario.getId());
+
+    String mensaje = construirMensajeConNumerosDePedido(
+      pedidosEnCarrito,
+      "quedó como pago pendiente",
+      "quedaron como pago pendientes"
+    );
+    flash.addFlashAttribute("mensajeInfo", mensaje);
+
+    return new ModelAndView("redirect:/mis-pedidos");
+  }
+
+  @RequestMapping(path = "/carrito/terminar-mas-tarde", method = RequestMethod.GET)
+  public ModelAndView terminarMasTarde(HttpSession session, RedirectAttributes flash) {
+    Usuario usuario = (Usuario) session.getAttribute(USUARIO);
+    if (usuario == null) {
+      return new ModelAndView("redirect:/login");
+    }
+
+    // No hace falta cambiar ningún estado: ya están guardados como EN_CARRITO
+    List<Pedido> pedidosEnCarrito = servicioPedido.obtenerPedidosEnCarrito(usuario.getId());
+
+    if (!pedidosEnCarrito.isEmpty()) {
+      String mensaje = construirMensajeConNumerosDePedido(
+        pedidosEnCarrito,
+        "quedó guardado en tu carrito",
+        "quedaron guardados en tu carrito"
+      );
+      flash.addFlashAttribute("mensajeInfo", mensaje);
+    }
+
+    return new ModelAndView("redirect:/mis-pedidos");
+  }
+
+  private String construirMensajeConNumerosDePedido(
+    List<Pedido> pedidos,
+    String sufijoSingular,
+    String sufijoPlural
+  ) {
+    List<String> numeros = pedidos.stream().map(p -> "#" + p.getId()).collect(Collectors.toList());
+
+    if (numeros.size() == UN_SOLO_PEDIDO) {
+      return "Tu pedido " + numeros.get(0) + " " + sufijoSingular + ".";
+    }
+
+    String todosMenosUltimo = String.join(", ", numeros.subList(0, numeros.size() - 1));
+    String ultimo = numeros.get(numeros.size() - 1);
+    return "Tus pedidos " + todosMenosUltimo + " y " + ultimo + " " + sufijoPlural + ".";
   }
 }

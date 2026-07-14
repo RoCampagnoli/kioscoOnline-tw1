@@ -36,7 +36,7 @@ function actualizarEstadoBotonConfirmar() {
 }
 
 function configurarFechaRetiro() {
-  const fecha = document.getElementById("fechaRetiro");
+  /*const fecha = document.getElementById("fechaRetiro");
   if (!fecha) return;
 
   const manana = new Date();
@@ -50,7 +50,8 @@ function configurarFechaRetiro() {
 
   fecha.addEventListener("keydown", (e) => e.preventDefault());
   fecha.addEventListener("paste", (e) => e.preventDefault());
-  fecha.addEventListener("drop", (e) => e.preventDefault());
+  fecha.addEventListener("drop", (e) => e.preventDefault());*/
+    inicializarFlatpickr();
 }
 
 function configurarEnvioFormulario() {
@@ -122,3 +123,46 @@ function inicializarPagina() {
 }
 
 document.addEventListener("DOMContentLoaded", inicializarPagina);
+
+async function inicializarFlatpickr() {
+    const fechaInput = document.getElementById('fechaRetiro');
+    if (!fechaInput) return;
+
+    const anioActual = new Date().getFullYear();
+    const feriadosArgentina = await obtenerFeriados(anioActual);
+
+    // Obtenemos solo el array de fechas string para el validador de disable de Flatpickr
+    const fechasFeriados = feriadosArgentina.map(f => f.fecha);
+
+    flatpickr(fechaInput, {
+        locale: "es",
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        disable: [
+            function(date) {
+                return (date.getDay() === 0 || date.getDay() === 6);
+            },
+            function(date) {
+                const offset = date.getTimezoneOffset();
+                const localDate = new Date(date.getTime() - (offset * 60 * 1000));
+                const fechaString = localDate.toISOString().split('T')[0];
+                return fechasFeriados.includes(fechaString);
+            }
+        ],
+        // Evento que se ejecuta cada vez que se renderiza el almanaque flotante
+        onDayCreate: function(dObj, dStr, fp, dayElem) {
+            // Obtenemos la fecha que se está dibujando en el casillero actual
+            const offset = dayElem.dateObj.getTimezoneOffset();
+            const localDate = new Date(dayElem.dateObj.getTime() - (offset * 60 * 1000));
+            const fechaString = localDate.toISOString().split('T')[0];
+
+            // Buscamos si coincide con un feriado
+            const feriado = feriadosArgentina.find(f => f.fecha === fechaString);
+            if (feriado) {
+                // Le añadimos un atributo html para que al pasar el mouse diga el nombre del feriado
+                dayElem.setAttribute("title", feriado.nombre);
+                dayElem.classList.add("dia-feriado-tooltip");
+            }
+        }
+    });
+}

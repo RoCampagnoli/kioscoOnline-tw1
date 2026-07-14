@@ -36,9 +36,19 @@
                     <h2>Historial de tus compras en KioNet</h2>
                 </div>
             </div>
+            <div th:if="${mensajeInfo}" class="alerta-mensaje alerta-informacion" style="margin-bottom: 20px;">
+                <span th:text="${mensajeInfo}"></span>
+            </div>
 
+            <div th:if="${mensajeExito}" class="alerta-mensaje alerta-exito" style="margin-bottom: 20px;">
+                <span th:text="${mensajeExito}"></span>
+            </div>
+
+            <div th:if="${mensajeError}" class="alerta-mensaje alerta-error" style="margin-bottom: 20px;">
+                <span th:text="${mensajeError}"></span>
+            </div>
             <!-- SIN PEDIDOS -->
-            <div th:if="${pedidos == null or pedidos.isEmpty()}" class="perfil-card">
+            <div th:if="${pedidosPorFecha == null or pedidosPorFecha.isEmpty()}" class="perfil-card">
                 <div class="empty-state">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                          stroke="currentColor">
@@ -51,74 +61,111 @@
                 </div>
             </div>
 
-            <!-- CON PEDIDOS -->
-            <div th:if="${pedidos != null and !pedidos.isEmpty()}">
+            <!-- CON PEDIDOS, AGRUPADOS POR FECHA -->
+            <div th:if="${pedidosPorFecha != null and !pedidosPorFecha.isEmpty()}">
 
-                <div class="pedidos-grid-container">
+                <div th:each="grupo : ${pedidosPorFecha}" class="grupo-fecha-pedidos" style="margin-bottom: 2rem;">
 
-                    <div class="pedido-card" th:each="pedido : ${pedidos}">
-                        <div class="pedido-card-header">
-                            <div>
-                                <h3 th:text="'Pedido #' + ${pedido.id}">Pedido</h3>
-                                <span class="badge bg-light text-dark" th:text="${pedido.hijo.nombre}">Hijo</span>
-                            </div>
-                            <div class="text-end">
-                                <span class="estado-badge"
-                                      th:classappend="${pedido.estado.name()}"
-                                      th:text="${pedido.estado}">
-                                </span>
-                                <br>
-                                <span class="pedido-fecha"
-                                      th:text="${#dates.format(pedido.fecha, 'dd/MM/yyyy HH:mm')}">
-                                </span>
-                            </div>
-                        </div>
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                        <p>Realizados el
+                        <span style="font-weight: 700; font-size: 1.1rem; white-space: nowrap;" th:text="${grupo.key}">01/01/2026</span>
 
-                        <div class="pedido-items flex-grow-1">
-                            <div class="pedido-item" th:each="item : ${pedido.items}">
-                                <div class="item-info">
-                                    <span class="item-cantidad" th:text="'x' + ${item.cantidad}">x1</span>
-                                    <span class="item-nombre" th:text="${item.producto.nombre}">Producto</span>
-                                </div>
-                                <span class="item-precio" th:text="'$' + ${item.subtotal}">$0</span>
-                            </div>
-                        </div>
-
-                        <div class="pedido-footer">
-                            <span class="pedido-total-label">Total del pedido</span>
-                            <span class="pedido-total-valor" th:text="'$' + ${pedido.subtotal}">$0</span>
-                        </div>
-
-                        <div class="pedido-acciones" th:if="${pedido.estado.name() == 'PAGO_PENDIENTE'}">
-
-                            <form th:action="@{/pedidos/cancelar}" method="post" class="w-50">
-                                <input type="hidden" name="pedidoId" th:value="${pedido.id}">
-                                <button type="submit" class="btn-accion-cancelar w-100">
-                                    Cancelar
-                                </button>
-                            </form>
-
-                            <form th:action="@{/pedidos/retomar-pago}" method="post" class="w-50">
-                                <input type="hidden" name="pedidoId" th:value="${pedido.id}">
-                                <button type="submit" class="btn-accion-pagar w-100">
-                                    Pagar
-                                </button>
-                            </form>
-                        </div>
-
-<!--                        <div class="pedido-acciones" th:if="${pedido.estado.name() == 'ENTREGADO'}">-->
-
-<!--                            <form th:action="@{/pedidos/Repetir pedido}" method="post" class="w-50">-->
-<!--                                <input type="hidden" name="pedidoId" th:value="${pedido.id}">-->
-<!--                                <button type="submit" class="btn-accion-repetir w-100" disabled=disabled>-->
-<!--                                    Repetir pedido-->
-<!--                                </button>-->
-<!--                            </form>-->
-
-<!--                        </div>-->
+                        </p>
+                        <hr style="flex: 1; border: none; border-top: 1px solid #ccc; margin: 0;">
                     </div>
 
+                    <div class="pedidos-grid-container">
+
+                        <div class="pedido-card" th:each="pedido : ${grupo.value}">
+                            <div class="pedido-card-header">
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <img th:if="${pedido.hijo.fotoPerfil != null}"
+                                         th:src="${pedido.hijo.fotoPerfil}"
+                                         alt=""
+                                         style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0;">
+                                    <div th:unless="${pedido.hijo.fotoPerfil != null}"
+                                         style="width: 40px; height: 40px; border-radius: 50%; background-color: #EFE9FD; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #7C3AED; flex-shrink: 0;">
+                                        <span th:text="${#strings.substring(pedido.hijo.nombre,0,1)}"></span>
+                                    </div>
+                                    <div>
+                                        <h3 th:text="'Pedido #' + ${pedido.id}">Pedido</h3>
+                                        <span class="badge bg-light text-dark" th:text="${pedido.hijo.nombre}">Hijo</span>
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <span class="estado-badge"
+                                          th:classappend="${pedido.estado.name()}"
+                                          th:text="${pedido.estado}">
+                                    </span>
+                                    <br>
+                                    <span class="pedido-fecha"
+                                          th:text="'F. Retiro: ' + ${pedido.fechaRetiroFormateada}">
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="pedido-items flex-grow-1">
+                                <div class="pedido-item" th:each="item : ${pedido.items}">
+                                    <div class="item-info" style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <img th:if="${item.producto.imagen != null}"
+                                             th:src="${item.producto.imagen}"
+                                             alt=""
+                                             style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+                                        <img th:unless="${item.producto.imagen != null}"
+                                             th:src="'https://res.cloudinary.com/dqrka5zry/image/upload/v1783997395/producto-default.png'"
+                                             alt=""
+                                             style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+                                        <span class="item-cantidad" th:text="'x' + ${item.cantidad}">x1</span>
+                                        <span class="item-nombre" th:text="${item.producto.nombre}">Producto</span>
+                                    </div>
+                                    <span class="item-precio" th:text="'$' + ${item.subtotal}">$0</span>
+                                </div>
+                            </div>
+
+                            <div class="pedido-footer">
+                                <span class="pedido-total-label">Total del pedido</span>
+                                <span class="pedido-total-valor" th:text="'$' + ${pedido.subtotal}">$0</span>
+                            </div>
+
+                            <div class="pedido-acciones" th:if="${pedido.estado.name() == 'PAGO_PENDIENTE'}">
+
+                                <form th:action="@{/pedidos/cancelar}" method="post" class="w-50">
+                                    <input type="hidden" name="pedidoId" th:value="${pedido.id}">
+                                    <button type="submit" class="btn-accion-cancelar w-100">
+                                        Cancelar
+                                    </button>
+                                </form>
+
+                                <form th:action="@{/pedidos/retomar-pago}" method="post" class="w-50">
+                                    <input type="hidden" name="pedidoId" th:value="${pedido.id}">
+                                    <button type="submit" class="btn-accion-pagar w-100">
+                                        Pagar
+                                    </button>
+                                </form>
+                            </div>
+
+                            <div class="pedido-acciones" th:if="${pedido.estado.name() == 'EN_CARRITO'}">
+                                <div class="w-50">
+                                    <a th:href="@{/carrito}" class="btn-accion-pagar w-50"
+                                       style="text-align: center; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">
+                                        Continuar compra
+                                    </a>
+
+                                </div>
+
+                                <form th:action="@{/pedidos/cancelar}" method="post" class="w-50">
+                                    <input type="hidden" name="pedidoId" th:value="${pedido.id}">
+                                    <button type="submit" class="btn-accion-cancelar w-100">
+                                        Cancelar
+                                    </button>
+                                </form>
+                            </div>
+
+                        </div>
+
+                    </div>
                 </div>
+
             </div>
 
         </section>

@@ -200,10 +200,15 @@ public class DistribucionControlador {
     Map<String, Integer> cantidadesPrevias = new HashMap<>();
     List<Pedido> pedidosEnCarrito = servicioPedido.obtenerPedidosEnCarrito(usuario.getId());
 
+    LocalDate fechaRetiroPrevia = null; // 👈 nuevo
+
     for (Pedido pedido : pedidosEnCarrito) {
       for (ItemPedido item : pedido.getItems()) {
         String clave = pedido.getHijo().getId() + "_" + item.getProducto().getId();
         cantidadesPrevias.put(clave, item.getCantidad());
+      }
+      if (fechaRetiroPrevia == null) {
+        fechaRetiroPrevia = pedido.getFechaRetiro();
       }
     }
     // 2. Overlay: si hay ediciones sin confirmar en el borrador de sesión, pisan la base
@@ -218,6 +223,7 @@ public class DistribucionControlador {
     model.put("hijos", hijos);
     model.put("usuario", usuario);
     model.put("cantidadesPrevias", cantidadesPrevias);
+    model.put("fechaRetiroPrevia", fechaRetiroPrevia); // 👈 nuevo
 
     return model;
   }

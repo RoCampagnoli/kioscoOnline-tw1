@@ -50,36 +50,70 @@
         </section>
     </main>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/index.global.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
+<script th:src="@{/js/feriados-service.js}"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/index.global.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', async function () {
         const calendarEl = document.getElementById('calendar');
-        const urlApiCalendario = calendarEl.getAttribute('data-url');        const calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth', firstDay: 1, height: 'auto',
+        if (!calendarEl) return;
+
+        const anioActual = new Date().getFullYear();
+        let feriadosArgentina = [];
+        try {
+            feriadosArgentina = await obtenerFeriados(anioActual);
+        } catch (e) {
+            console.error("Error cargando feriados:", e);
+        }
+
+        const urlApiCalendario = calendarEl.getAttribute('data-url');
+
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            firstDay: 1,
+            height: 'auto',
             events: urlApiCalendario,
-            // 2. Transformar tu DTO de Java a lo que FullCalendar entiende
             eventDataTransform: function(eventData) {
                 return {
                     id: eventData.pedidoId,
                     title: eventData.titulo,
-                    start: eventData.fecha, // FullCalendar usa 'start' para la fecha de inicio
-                    className: 'estado-badge ' + eventData.claseCss                };
+                    start: eventData.fecha,
+                    className: 'estado-badge ' + eventData.claseCss
+                };
             },
-
             dayCellDidMount: function (info) {
-
+                // Fines de semana
                 if (info.date.getDay() === 0 || info.date.getDay() === 6) {
                     info.el.classList.add("fin-semana");
                 }
 
+                // Corrección de zona horaria
+                const yyyy = info.date.getFullYear();
+                const mm = String(info.date.getMonth() + 1).padStart(2, '0');
+                const dd = String(info.date.getDate()).padStart(2, '0');
+                const fechaString = `${yyyy}-${mm}-${dd}`;
+
+                // Buscar si este día es feriado
+                const feriadoEncontrado = feriadosArgentina.find(f => f.fecha === fechaString);
+
+                if (feriadoEncontrado) {
+                    info.el.classList.add("dia-feriado");
+
+                    // Creamos una etiqueta de texto para el nombre del feriado
+                    const nombreFeriadoEl = document.createElement('div');
+                    nombreFeriadoEl.className = 'fc-nombre-feriado';
+                    nombreFeriadoEl.innerText = feriadoEncontrado.nombre;
+
+                    // Lo agregamos dentro de la celda (abajo del número de día)
+                    const targetContainer = info.el.querySelector('.fc-daygrid-day-events') || info.el;
+                    targetContainer.appendChild(nombreFeriadoEl);
+                }
             }
         });
 
         calendar.render();
     });
-
-
 </script>
 <script th:src="@{/js/drawer.js}"></script>
 

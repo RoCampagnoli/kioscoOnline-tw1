@@ -123,4 +123,11 @@ public class Pedido {
   public void setEstado(EstadoPedido estado) {
     this.estado = estado;
   }
+
+  public String getFechaRetiroFormateada() {
+    if (fechaRetiro == null) {
+      return "";
+    }
+    return fechaRetiro.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+  }
 }

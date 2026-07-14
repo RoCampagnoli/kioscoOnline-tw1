@@ -274,3 +274,43 @@ background: #F8F9FD;
 .producto-acordeon-card .accordion-button:not(.collapsed) {
     border-bottom: 1px solid var(--border) !important;
 }
+
+/* Contenedor del input y el icono */
+.input-group-datepicker {
+    display: flex;
+    align-items: center;
+}
+
+.input-group-datepicker .fecha-input {
+    padding-right: 40px; /* Espacio para el icono */
+    cursor: pointer;
+    background-color: #fff !important;
+}
+
+.datepicker-icon {
+    position: absolute;
+    right: 15px;
+    color: #6f42c1; /* Color violeta a tono con tu diseño */
+    pointer-events: none; /* Hace que el clic pase a través del icono e interactúe con el input */
+}
+
+/* --- ESTILOS PARA CORREGIR FLATPICKR --- */
+
+/* Forzar que los días deshabilitados (fines de semana y feriados) sean grises y legibles */
+.flatpickr-day.flatpickr-disabled,
+.flatpickr-day.flatpickr-disabled:hover {
+    background: #f1f3f5 !important;
+    color: #adb5bd !important;
+    cursor: not-allowed !important;
+    text-decoration: line-through; /* Tachado para mayor claridad */
+    opacity: 0.6;
+}
+
+/* Estilo para el día de hoy en el selector */
+.flatpickr-day.today {
+    border-color: #6f42c1 !important;
+}
+.flatpickr-day.today:hover {
+    background: #6f42c1 !important;
+    color: #fff !important;
+}

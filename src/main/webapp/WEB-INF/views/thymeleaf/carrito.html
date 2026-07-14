@@ -63,11 +63,18 @@
                         </div>
                     </div>
 
-                    <!-- Botón modificar -->
-                    <a th:href="@{/distribucion}" class="btn-primary-disabled"
-                       style="text-align: center; text-decoration: none; display: block; padding: 0.75rem; margin-top: 0.5rem;">
-                        Modificar pedidos
-                    </a>
+                    <!-- Botón modificar  y terminar mas tarde-->
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                        <a th:href="@{/distribucion}" class="btn-primary-disabled"
+                           style="flex: 1; text-align: center; text-decoration: none; padding: 0.75rem;">
+                            Modificar pedidos
+                        </a>
+                        <a th:href="@{/carrito/terminar-mas-tarde}" class="btn-primary"
+                           style="flex: 1; text-align: center; text-decoration: none; padding: 0.75rem;">
+                            Terminar más tarde
+                        </a>
+                    </div>
+
                 </div>
             </section>
 
@@ -94,6 +101,12 @@
                         </button>
                         <button class="btn-primary-disabled" th:if="${#lists.isEmpty(pedidos)}" disabled>
                             Proceder al pago
+                        </button>
+                    </form>
+
+                    <form th:if="${!#lists.isEmpty(pedidos)}" th:action="@{/carrito/pagar-despues}" method="POST" style="width: 100%; margin-top: 0.5rem;">
+                        <button type="submit" class="btn-primary-disabled" style="width: 100%; cursor: pointer;">
+                            Pagar más tarde
                         </button>
                     </form>
 

@@ -5,7 +5,13 @@ import com.tallerwebi.dominio.Pedidos.Pedido;
 import com.tallerwebi.dominio.Pedidos.ServicioPedido;
 import com.tallerwebi.dominio.Usuario.Usuario;
 import com.tallerwebi.dominio.excepcion.PedidoNoEncontradoException;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import javax.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -22,6 +28,7 @@ public class ControladorMisPedidos {
 
   private final ServicioPedido servicioPedido;
   private final ServicioMercadoPago servicioMercadoPago;
+  private static final DateTimeFormatter FORMATO_DIA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
   @Autowired
   public ControladorMisPedidos(
@@ -42,9 +49,21 @@ public class ControladorMisPedidos {
 
     List<Pedido> pedidos = servicioPedido.obtenerTodosLosPedidos(usuario.getId());
 
+    Map<String, List<Pedido>> pedidosPorFecha = new LinkedHashMap<>();
+
+    for (Pedido pedido : pedidos) {
+      LocalDate fechaCreacion = pedido
+        .getFecha()
+        .toInstant()
+        .atZone(ZoneId.systemDefault())
+        .toLocalDate();
+      String clave = fechaCreacion.format(FORMATO_DIA); // 👈 usa la constante
+      pedidosPorFecha.computeIfAbsent(clave, k -> new ArrayList<>()).add(pedido);
+    }
+
     ModelMap model = new ModelMap();
     model.put("usuario", usuario);
-    model.put("pedidos", pedidos);
+    model.put("pedidosPorFecha", pedidosPorFecha);
     return new ModelAndView("mis-pedidos", model);
   }
 

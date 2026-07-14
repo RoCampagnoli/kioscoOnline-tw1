@@ -25,11 +25,36 @@
 
 .fc-event.estado-badge.ENTREGADO .fc-event-title {
     color: #125dab !important;
-
 }
 
 .fc-event.estado-badge.CANCELADO .fc-event-title {
     color: #2f2f2f !important;
+}
+
+/* Color de fondo rojo suave para distinguir los feriados */
+.fc-day.dia-feriado {
+    background-color: #fff0f0 !important;
+}
+
+.fc-day.dia-feriado .fc-daygrid-day-number {
+    color: #e63946 !important; /* Número de fecha resaltado en rojo */
+    font-weight: bold;
+}
+
+/* Texto del feriado dentro del calendario (Escritorio) */
+.fc-nombre-feriado {
+    font-size: 0.7rem;
+    color: #e63946;
+    background-color: #ffe3e3;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin: 4px auto 2px auto;
+    width: 90%;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Si el nombre es muy largo, lo corta con "..." */
+    font-weight: 600;
 }
 
 /* === RESPONSIVE PARA MOBILE === */
@@ -60,5 +85,22 @@
     .fc-daygrid-day-top {
         font-size: 0.7rem;
         padding: 2px !important;
+    }
+
+    /* --- AJUSTES NUEVOS PARA EL FERIADO EN MOBILE --- */
+    .fc-nombre-feriado {
+        font-size: 0.55rem !important;    /* Letra ultra pequeña pero legible */
+        padding: 1px 3px !important;     /* Reducimos el colchón interno */
+        margin: 2px auto 1px auto !important; /* Menos margen para que no estire la celda hacia abajo */
+        width: 95% !important;           /* Que aproveche un poquito más de ancho */
+    }
+}
+
+/* En celulares muy chiquitos (pantallas de menos de 400px de ancho) */
+@media (max-width: 400px) {
+    .fc-nombre-feriado {
+        /* En pantallas diminutas ocultamos el texto para que no rompa el alto de la celda */
+        /* Pero dejamos el fondo rosa/rojo del día feriado para que se note */
+        display: none !important;
     }
 }

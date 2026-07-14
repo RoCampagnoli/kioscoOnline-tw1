@@ -64,6 +64,7 @@ public class ControladorMercadoPago {
     // Así, si la API de MercadoPago falla, el pedido ya quedó en un estado
     // consistente (PAGO_PENDIENTE) en vez de perderse o quedar trabado en EN_CARRITO.
     servicioPedido.marcarPedidosEnCarritoComoPendientes(usuario.getId());
+    servicioCarrito.vaciarCarrito(usuario.getId()); // 👈 nuevo: los productos ya están comprometidos, no son más "candidatos"
 
     // 3. Recién ahora intentamos generar el link de pago
     String urlPago = servicioMercadoPago.crearPreferenciaDePago(pedidosAPagar);

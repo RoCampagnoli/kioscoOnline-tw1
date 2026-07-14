@@ -4,7 +4,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.tallerwebi.dominio.Carrito.Carrito;
@@ -52,6 +56,8 @@ public class CarritoControladorTest {
     hijoMock = mock(Hijo.class);
     carritoControlador = new CarritoControlador(serviCarritomock, serviPedidoMock);
     redirectAttributesMock = mock(RedirectAttributes.class);
+
+    when(usuarioMock.getId()).thenReturn(1L);
   }
 
   @Test
@@ -85,5 +91,108 @@ public class CarritoControladorTest {
 
     List<Pedido> pedidos = (List<Pedido>) mv.getModel().get("pedidos");
     assertThat(pedidos.size(), equalTo(1));
+  }
+
+  // ---------- pagarDespues ----------
+
+  @Test
+  public void siNoHayUsuarioLogueadoAlPagarDespuesDebeRedirigirALogin() {
+    when(sessionMock.getAttribute("USUARIO")).thenReturn(null);
+
+    ModelAndView mv = carritoControlador.pagarDespues(sessionMock, redirectAttributesMock);
+
+    assertThat(mv.getViewName(), equalToIgnoringCase("redirect:/login"));
+  }
+
+  @Test
+  public void siNoHayPedidosEnCarritoAlPagarDespuesDebeRedirigirADistribucionConError() {
+    when(sessionMock.getAttribute("USUARIO")).thenReturn(usuarioMock);
+    when(serviPedidoMock.obtenerPedidosEnCarrito(1L)).thenReturn(new ArrayList<>());
+
+    ModelAndView mv = carritoControlador.pagarDespues(sessionMock, redirectAttributesMock);
+
+    assertThat(mv.getViewName(), equalToIgnoringCase("redirect:/distribucion"));
+    verify(redirectAttributesMock)
+      .addFlashAttribute(
+        eq("errorDistribucion"),
+        eq("No hay pedidos para dejar pendientes de pago")
+      );
+    verify(serviPedidoMock, never()).marcarPedidosEnCarritoComoPendientes(anyLong());
+  }
+
+  @Test
+  public void conUnSoloPedidoEnCarritoAlPagarDespuesDebeMarcarComoPendienteVaciarCarritoYRedirigirAMisPedidos() {
+    Pedido pedido = mock(Pedido.class);
+    when(pedido.getId()).thenReturn(5L);
+
+    when(sessionMock.getAttribute("USUARIO")).thenReturn(usuarioMock);
+    when(serviPedidoMock.obtenerPedidosEnCarrito(1L)).thenReturn(List.of(pedido));
+
+    ModelAndView mv = carritoControlador.pagarDespues(sessionMock, redirectAttributesMock);
+
+    assertThat(mv.getViewName(), equalToIgnoringCase("redirect:/mis-pedidos"));
+    verify(serviPedidoMock).marcarPedidosEnCarritoComoPendientes(1L);
+    verify(serviCarritomock).vaciarCarrito(1L);
+    verify(redirectAttributesMock)
+      .addFlashAttribute(eq("mensajeInfo"), eq("Tu pedido #5 quedó como pago pendiente."));
+  }
+
+  @Test
+  public void conVariosPedidosEnCarritoAlPagarDespuesElMensajeDebeSerPluralConTodosLosNumeros() {
+    Pedido pedido1 = mock(Pedido.class);
+    Pedido pedido2 = mock(Pedido.class);
+    when(pedido1.getId()).thenReturn(4L);
+    when(pedido2.getId()).thenReturn(5L);
+
+    when(sessionMock.getAttribute("USUARIO")).thenReturn(usuarioMock);
+    when(serviPedidoMock.obtenerPedidosEnCarrito(1L)).thenReturn(List.of(pedido1, pedido2));
+
+    ModelAndView mv = carritoControlador.pagarDespues(sessionMock, redirectAttributesMock);
+
+    assertThat(mv.getViewName(), equalToIgnoringCase("redirect:/mis-pedidos"));
+    verify(redirectAttributesMock)
+      .addFlashAttribute(
+        eq("mensajeInfo"),
+        eq("Tus pedidos #4 y #5 quedaron como pago pendientes.")
+      );
+  }
+
+  // ---------- terminarMasTarde ----------
+
+  @Test
+  public void siNoHayUsuarioLogueadoAlTerminarMasTardeDebeRedirigirALogin() {
+    when(sessionMock.getAttribute("USUARIO")).thenReturn(null);
+
+    ModelAndView mv = carritoControlador.terminarMasTarde(sessionMock, redirectAttributesMock);
+
+    assertThat(mv.getViewName(), equalToIgnoringCase("redirect:/login"));
+  }
+
+  @Test
+  public void conPedidosEnCarritoAlTerminarMasTardeNoDebeCambiarEstadosYDebeMostrarMensaje() {
+    Pedido pedido = mock(Pedido.class);
+    when(pedido.getId()).thenReturn(7L);
+
+    when(sessionMock.getAttribute("USUARIO")).thenReturn(usuarioMock);
+    when(serviPedidoMock.obtenerPedidosEnCarrito(1L)).thenReturn(List.of(pedido));
+
+    ModelAndView mv = carritoControlador.terminarMasTarde(sessionMock, redirectAttributesMock);
+
+    assertThat(mv.getViewName(), equalToIgnoringCase("redirect:/mis-pedidos"));
+    verify(redirectAttributesMock)
+      .addFlashAttribute(eq("mensajeInfo"), eq("Tu pedido #7 quedó guardado en tu carrito."));
+    verify(serviPedidoMock, never()).marcarPedidosEnCarritoComoPendientes(anyLong());
+    verify(serviCarritomock, never()).vaciarCarrito(anyLong());
+  }
+
+  @Test
+  public void sinPedidosEnCarritoAlTerminarMasTardeDebeRedirigirAMisPedidosSinMensaje() {
+    when(sessionMock.getAttribute("USUARIO")).thenReturn(usuarioMock);
+    when(serviPedidoMock.obtenerPedidosEnCarrito(1L)).thenReturn(new ArrayList<>());
+
+    ModelAndView mv = carritoControlador.terminarMasTarde(sessionMock, redirectAttributesMock);
+
+    assertThat(mv.getViewName(), equalToIgnoringCase("redirect:/mis-pedidos"));
+    verify(redirectAttributesMock, never()).addFlashAttribute(eq("mensajeInfo"), any());
   }
 }

@@ -2,6 +2,7 @@ package com.tallerwebi.presentacion.Pagos;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.*;
 
 import com.tallerwebi.dominio.Pagos.ServicioMercadoPago;
@@ -9,7 +10,10 @@ import com.tallerwebi.dominio.Pedidos.Pedido;
 import com.tallerwebi.dominio.Pedidos.ServicioPedido;
 import com.tallerwebi.dominio.Usuario.Usuario;
 import com.tallerwebi.dominio.excepcion.PedidoNoEncontradoException;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,15 +51,28 @@ public class ControladorMisPedidosTest {
   }
 
   @Test
-  public void siElUsuarioEstaLogueadoDebeMostrarSusPedidosEnElModelo() {
-    List<Pedido> pedidos = List.of(mock(Pedido.class));
+  public void siElUsuarioEstaLogueadoDebeMostrarSusPedidosAgrupadosPorFechaEnElModelo() {
+    Pedido pedido = mock(Pedido.class);
+    when(pedido.getFecha()).thenReturn(new Date()); // 👈 necesario, el controller ahora la usa
+
+    List<Pedido> pedidos = List.of(pedido);
     when(servicioPedidoMock.obtenerTodosLosPedidos(1L)).thenReturn(pedidos);
 
     ModelAndView mav = controladorMisPedidos.verMisPedidos(sessionMock);
 
     assertThat(mav.getViewName(), equalTo("mis-pedidos"));
-    assertThat(mav.getModel().get("pedidos"), equalTo(pedidos));
     assertThat(mav.getModel().get("usuario"), equalTo(usuarioMock));
+
+    @SuppressWarnings("unchecked")
+    Map<String, List<Pedido>> pedidosPorFecha = (Map<String, List<Pedido>>) mav
+      .getModel()
+      .get("pedidosPorFecha");
+
+    assertThat(pedidosPorFecha, notNullValue());
+    assertThat(
+      pedidosPorFecha.values().stream().flatMap(List::stream).collect(Collectors.toList()),
+      equalTo(pedidos)
+    );
   }
 
   @Test
