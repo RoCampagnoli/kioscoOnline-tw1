@@ -506,7 +506,7 @@ body {
     }
 
     .navbar-brand img {
-        height: 32px;
+        height: 60px;
     }
 
     .header-center {
@@ -570,6 +570,9 @@ body {
 @media (max-width: 400px) {
     .products-grid {
         grid-template-columns: 1fr;
+    }
+    .navbar-brand img {
+        height: 50px;
     }
 }
 
