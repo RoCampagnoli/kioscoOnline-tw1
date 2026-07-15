@@ -1,6 +1,7 @@
 package com.tallerwebi.presentacion.Pagos;
 
 import com.tallerwebi.dominio.Pagos.ServicioMercadoPago;
+import com.tallerwebi.dominio.Pedidos.EstadoPedido;
 import com.tallerwebi.dominio.Pedidos.Pedido;
 import com.tallerwebi.dominio.Pedidos.ServicioPedido;
 import com.tallerwebi.dominio.Usuario.Usuario;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -40,7 +42,10 @@ public class ControladorMisPedidos {
   }
 
   @RequestMapping(path = "/mis-pedidos", method = RequestMethod.GET)
-  public ModelAndView verMisPedidos(HttpSession session) {
+  public ModelAndView verMisPedidos(
+    HttpSession session,
+    @RequestParam(value = "estado", required = false) String estadoFiltro
+  ) {
     Usuario usuario = (Usuario) session.getAttribute("USUARIO");
 
     if (usuario == null) {
@@ -49,6 +54,13 @@ public class ControladorMisPedidos {
 
     List<Pedido> pedidos = servicioPedido.obtenerTodosLosPedidos(usuario.getId());
 
+    if (estadoFiltro != null && !estadoFiltro.isEmpty() && !"TODOS".equals(estadoFiltro)) {
+      pedidos =
+        pedidos
+          .stream()
+          .filter(p -> p.getEstado().name().equals(estadoFiltro))
+          .collect(Collectors.toList());
+    }
     Map<String, List<Pedido>> pedidosPorFecha = new LinkedHashMap<>();
 
     for (Pedido pedido : pedidos) {
@@ -64,6 +76,8 @@ public class ControladorMisPedidos {
     ModelMap model = new ModelMap();
     model.put("usuario", usuario);
     model.put("pedidosPorFecha", pedidosPorFecha);
+    model.put("estados", EstadoPedido.values());
+    model.put("estadoActual", estadoFiltro);
     return new ModelAndView("mis-pedidos", model);
   }
 

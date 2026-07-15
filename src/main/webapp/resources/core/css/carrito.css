@@ -22,34 +22,31 @@ body {
     width: 100%;
 }
 
-.app-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 2rem;
+.fecha-retiro-banner {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--white);
+    color: var(--purple-dark);
+    padding: 0.6rem 1.2rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-top: 0.75rem;
 }
 
 /* --- Layout del Carrito --- */
 .cart-layout {
     display: grid;
-    grid-template-columns: 1fr 380px; /* Productos toman el resto, resumen 380px */
-    gap: 2rem;
+    grid-template-columns: 1fr 1px 380px;
+    gap: 1rem;
     align-items: start;
 }
 
-.section-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin-bottom: 1.5rem;
-}
-
-.fecha-retiro-info{
-    margin-bottom:1.5rem;
-    padding:0.8rem 1rem;
-    background:#f7f4ff;
-    border-left:4px solid var(--purple);
-    border-radius:8px;
-    color:#555;
-    font-size:0.95rem;
+.cart-divider {
+    align-self: stretch;
+    background-color: var(--border-color, #a8a8ab);
+    width: 1px;
 }
 
 /* --- Tarjetas de Productos --- */
@@ -159,16 +156,33 @@ body {
 
 /* --- Resumen de Compra --- */
 .summary-card {
-    background-color: var(--bg-card);
-    border-radius: var(--radius-lg);
-    padding: 2rem;
-    box-shadow: var(--shadow-md);
+    background-color: var(--bg-card, #ffffff);
+    border-radius: var(--radius-lg, 12px);
+
+    /* Aplicamos el estilo destacado para todas las vistas (escritorio y móvil) */
+    border: 2px solid var(--primary-color, #7C3AED);
+    box-shadow: 0 10px 25px rgba(124, 58, 237, 0.12);
+
+    padding: 1.5rem 1.25rem; /* Un poco más de espacio interno para que respire */
+    position: relative;
+    overflow: hidden;
+}
+
+/* Indicador visual superior de color violeta */
+.summary-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background-color: var(--primary-color, #7C3AED);
 }
 
 .summary-title {
     font-size: 1.25rem;
     font-weight: 700;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .summary-row {
@@ -213,6 +227,7 @@ body {
 .btn-primary-disabled {
     width: 100%;
     background-color: var(--muted);
+    align-content: center;
     color: white;
     border: none;
     padding: 1rem;
@@ -250,16 +265,17 @@ body {
         grid-template-columns: 1fr;
     }
 
+    /* 1. Transformamos el divisor vertical en una línea horizontal */
+    .cart-divider {
+        width: 100%;
+        height: 1px;
+        background-color: var(--border-color, #e2e8f0);
+        margin: 1rem 0; /* Espaciado arriba y abajo de la línea */
+    }
+
     .item-actions {
         flex-direction: column;
         align-items: flex-end;
         gap: 0.5rem;
     }
-}
-
-/* Ocultar drawer en carrito */
-#panelCliente,
-#drawerOverlay,
-.btn-hamburguesa {
-    display: none !important;
 }

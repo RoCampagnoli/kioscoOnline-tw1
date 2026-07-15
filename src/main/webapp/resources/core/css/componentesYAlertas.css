@@ -45,9 +45,9 @@
     justify-content: space-between;
     background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
     border-radius: var(--radius-lg);
-    padding: 2.2rem;
+    padding: 1.5rem;
     color: var(--white);
-    margin-bottom: 2.5rem;
+    margin-bottom: 2rem;
 }
 
 .banner-titulos h1 {
@@ -141,6 +141,59 @@
     opacity: 0.6;
     filter: grayscale(30%);
 }
+
+/* === CHIPS DE FILTRO POR ESTADO (colores a juego con .estado-badge) === */
+.category-chip.EN_CARRITO.active {
+    background-color: #9c9cf6;
+    color: #1A1A2E;
+    border-color: #1A1A2E;
+}
+
+.category-chip.PAGO_PENDIENTE.active {
+    background-color: #ef8089;
+    color: #dc3545;
+    border-color: #93232f;
+}
+
+.category-chip.PAGADO.active {
+    background-color: #dbfede;
+    color: #177c3c;
+    border-color: #02460d;
+}
+
+.category-chip.PEDIDO_VISTO.active {
+    background-color: #FEF3C7;
+    color: #92400E;
+    border-color: #FCD34D;
+}
+
+.category-chip.PEDIDO_ARMADO.active {
+    background-color: #f393d1;
+    color: #ad0474;
+    border-color: #67024d;
+}
+
+.category-chip.ENTREGADO.active {
+    background-color: #7bb1ff;
+    color: #125dab;
+    border-color: #6699cc;
+}
+
+.category-chip.CANCELADO.active {
+    background-color: #d9d9d9;
+    color: #2f2f2f;
+    border-color: #1A1A2E;
+}
+
+/* Hover con el mismo color del estado, aunque no esté seleccionado */
+.category-chip.EN_CARRITO:hover { background-color: #9c9cf6; color: #1A1A2E; border-color: #1A1A2E; }
+.category-chip.PAGO_PENDIENTE:hover { background-color: #ef8089; color: #dc3545; border-color: #93232f; }
+.category-chip.PAGADO:hover { background-color: #dbfede; color: #177c3c; border-color: #02460d; }
+.category-chip.PEDIDO_VISTO:hover { background-color: #FEF3C7; color: #92400E; border-color: #FCD34D; }
+.category-chip.PEDIDO_ARMADO:hover { background-color: #f393d1; color: #ad0474; border-color: #67024d; }
+.category-chip.ENTREGADO:hover { background-color: #7bb1ff; color: #125dab; border-color: #6699cc; }
+.category-chip.CANCELADO:hover { background-color: #d9d9d9; color: #2f2f2f; border-color: #1A1A2E; }
+
 
 /* === RESPONSIVE: BANNER DE TÍTULO === */
 @media (max-width: 768px) {
