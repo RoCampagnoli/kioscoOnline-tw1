@@ -54,7 +54,7 @@
                 <th:block th:each="est : ${estados}">
                     <a th:class="'category-chip ' + ${est.name()}"
                        th:href="@{/mis-pedidos(estado=${est.name()})}"
-                       th:text="${est.name()}"
+                       th:text="${#strings.capitalize(#strings.toLowerCase(#strings.replace(est.name(), '_', ' ')))}"
                        th:classappend="${estadoActual == est.name()} ? 'active' : ''">
                     </a>
                 </th:block>
@@ -123,7 +123,7 @@
                                 </div>
                                 <span class="estado-badge"
                                       th:classappend="${pedido.estado.name()}"
-                                      th:text="${pedido.estado}">
+                                      th:text="${#strings.capitalize(#strings.toLowerCase(#strings.replace(pedido.estado.name(), '_', ' ')))}">
                                 </span>
                             </div>
 

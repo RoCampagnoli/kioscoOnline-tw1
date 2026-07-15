@@ -46,16 +46,17 @@ public class ControladorLogin {
     ModelMap modelo = new ModelMap();
     DatosLogin datosLogin = new DatosLogin();
 
-    Cookie[] cookies = request.getCookies();
-    if (cookies != null) {
-      for (Cookie cookie : cookies) {
-        if ("emailRecordado".equals(cookie.getName())) {
-          datosLogin.setEmail(cookie.getValue());
-          break;
-        }
-      }
+    // 💡 SOLUCIÓN DEFINITIVA: Buscamos la cookie delegando en un método auxiliar.
+    // De esta manera, no hay inicializaciones redundantes ni dobles asignaciones locales.
+    Cookie cookieRecordada = buscarCookieRecordada(request.getCookies());
+    boolean rememberMeChecked = cookieRecordada != null;
+
+    if (rememberMeChecked) {
+      datosLogin.setEmail(cookieRecordada.getValue());
     }
+
     modelo.put("datosLogin", datosLogin);
+    modelo.put("rememberMeChecked", rememberMeChecked);
     return new ModelAndView("login", modelo);
   }
 
@@ -235,5 +236,17 @@ public class ControladorLogin {
     //    ModelMap model = new ModelMap();
     //    model.put("exito", "Su contraseña fue cambiada exitosamente");
     //    return new ModelAndView("cambiarContrasenia", model);
+  }
+
+  // 💡 Solución para 'UseVarargs': Cambiamos Cookie[] por Cookie...
+  private Cookie buscarCookieRecordada(Cookie... cookies) {
+    if (cookies != null) {
+      for (Cookie cookie : cookies) {
+        if ("emailRecordado".equals(cookie.getName())) {
+          return cookie;
+        }
+      }
+    }
+    return null;
   }
 }

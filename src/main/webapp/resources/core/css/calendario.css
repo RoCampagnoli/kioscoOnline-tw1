@@ -1,4 +1,72 @@
 @import "variablesColor.css";
+
+/* Forzar la primera letra del título del mes en mayúscula */
+.fc .fc-toolbar-title {
+    text-transform: capitalize !important;
+}
+
+/* --- ESTILOS DEL POP-UP MODAL DEL CALENDARIO --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.45); /* Fondo oscuro con transparencia */
+    backdrop-filter: blur(4px); /* Difumina suavemente el fondo de la pantalla */
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.modal-card-contenedor {
+    background-color: var(--white, #ffffff);
+    width: 90%;
+    max-width: 500px;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    position: relative;
+    transform: translateY(20px);
+    transition: transform 0.25s ease;
+}
+
+.modal-overlay.active .modal-card-contenedor {
+    transform: translateY(0);
+}
+
+.modal-btn-cerrar {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 1.75rem;
+    cursor: pointer;
+    color: var(--muted, #9ca3af);
+    transition: color 0.15s;
+    line-height: 1;
+    z-index: 100;
+}
+
+.modal-btn-cerrar:hover {
+    color: var(--text, #1f2937);
+}
+
+/* Opcional: Ajustar un pequeño margen a la leyenda */
+.calendario-leyenda {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+}
 .fin-semana {
     background-color: #a9a7a7 !important;
 }
@@ -96,6 +164,41 @@
     }
 }
 
+
+/* Estilos para la leyenda inyectada en FullCalendar */
+.calendario-leyenda {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0.75rem 0.25rem 1.25rem 0.25rem;
+    border-bottom: 1px solid var(--border, #e5e7eb);
+    margin-bottom: 1rem;
+}
+
+.calendario-leyenda .leyenda-titulo {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--muted, #6b7280);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.calendario-leyenda .leyenda-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+/* Forzamos estilos compactos de etiquetas dentro de la leyenda */
+.calendario-leyenda .category-chip {
+    font-size: 0.75rem !important;
+    padding: 0.25rem 0.65rem !important;
+    margin: 0 !important;
+    cursor: default !important;
+    pointer-events: none !important;
+    box-shadow: none !important;
+}
 /* En celulares muy chiquitos (pantallas de menos de 400px de ancho) */
 @media (max-width: 400px) {
     .fc-nombre-feriado {

@@ -18,7 +18,7 @@
     <link rel="stylesheet" th:href="@{/css/perfil.css}"/>
     <link rel="stylesheet" th:href="@{/css/mis-pedidos.css}"/>
     <link rel="stylesheet" th:href="@{/css/calendario.css}"/>
-
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.8/locales/es.global.min.js"></script>
 
 </head>
 
@@ -43,9 +43,20 @@
                 <!--ACA IRIA EL CALENDARIO-->
                 <div id="calendar" th:data-url="@{/api/calendario}"></div>
             </div>
+            <div id="contenedor-leyenda"></div>
+
         </section>
     </main>
 </div>
+
+<div id="modalDetallePedido" class="modal-overlay" onclick="cerrarModal(event)">
+    <div class="modal-card-contenedor" onclick="event.stopPropagation()">
+        <button class="modal-btn-cerrar" onclick="cerrarModalDirecto()">&times;</button>
+        <div id="modal-contenido-dinamico">
+        </div>
+    </div>
+</div>
+
 <script th:src="@{/js/feriados-service.js}"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/index.global.min.js"></script>
@@ -67,8 +78,12 @@
 
         const calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
+            locale: 'es',
             firstDay: 1,
             height: 'auto',
+            buttonText: {
+                today: 'Hoy' // 👈 Fuerza la traducción de "today" a "Hoy"
+            },
             events: urlApiCalendario,
             eventDataTransform: function(eventData) {
                 return {
@@ -78,38 +93,178 @@
                     className: 'estado-badge ' + eventData.claseCss
                 };
             },
+            // 🔴 NUEVO: Evento al hacer clic en un pedido del calendario
+            eventClick: function(info) {
+                info.jsEvent.preventDefault(); // Evitamos redirecciones automáticas
+                abrirDetallePedido(info.event.id);
+            },
             dayCellDidMount: function (info) {
-                // Fines de semana
                 if (info.date.getDay() === 0 || info.date.getDay() === 6) {
                     info.el.classList.add("fin-semana");
                 }
 
-                // Corrección de zona horaria
                 const yyyy = info.date.getFullYear();
                 const mm = String(info.date.getMonth() + 1).padStart(2, '0');
                 const dd = String(info.date.getDate()).padStart(2, '0');
                 const fechaString = `${yyyy}-${mm}-${dd}`;
 
-                // Buscar si este día es feriado
                 const feriadoEncontrado = feriadosArgentina.find(f => f.fecha === fechaString);
 
                 if (feriadoEncontrado) {
                     info.el.classList.add("dia-feriado");
 
-                    // Creamos una etiqueta de texto para el nombre del feriado
                     const nombreFeriadoEl = document.createElement('div');
                     nombreFeriadoEl.className = 'fc-nombre-feriado';
                     nombreFeriadoEl.innerText = feriadoEncontrado.nombre;
 
-                    // Lo agregamos dentro de la celda (abajo del número de día)
                     const targetContainer = info.el.querySelector('.fc-daygrid-day-events') || info.el;
                     targetContainer.appendChild(nombreFeriadoEl);
                 }
             }
         });
-
         calendar.render();
+        inyectarLeyenda();
     });
+
+    // Función auxiliar para construir e insertar la leyenda debajo de la toolbar
+    // Función corregida para usar "estado-badge" y colocarla en el contenedor estático superior
+    function inyectarLeyenda() {
+        const contenedor = document.getElementById('contenedor-leyenda');
+        if (!contenedor) return;
+
+        contenedor.innerHTML = `
+        <div class="calendario-leyenda" style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+            <span style="font-size: 0.85rem; font-weight: 700; color: var(--text); margin-right: 0.5rem; text-transform: uppercase;">Guía visual de Estados:</span>
+            <div style="display: inline-flex; flex-wrap: wrap; gap: 0.5rem;">
+                <span class="estado-badge EN_CARRITO">En Carrito</span>
+                <span class="estado-badge PAGO_PENDIENTE">Pago Pendiente</span>
+                <span class="estado-badge PAGADO">Pagado</span>
+                <span class="estado-badge PEDIDO_VISTO">Visto</span>
+                <span class="estado-badge PEDIDO_ARMADO">Armado</span>
+                <span class="estado-badge ENTREGADO">Entregado</span>
+                <span class="estado-badge CANCELADO">Cancelado</span>
+            </div>
+        </div>
+    `;
+    }
+    // 🔴 NUEVO: Función para buscar y renderizar el modal con el detalle del pedido clickeado
+    function abrirDetallePedido(pedidoId) {
+        const modal = document.getElementById('modalDetallePedido');
+        const contenido = document.getElementById('modal-contenido-dinamico');
+
+        contenido.innerHTML = '<div style="text-align: center; padding: 2rem; font-weight: 600; color: var(--muted);">Cargando detalle del pedido...</div>';
+        modal.classList.add('active');
+
+        fetch(`/spring/api/pedidos/detalle?id=${pedidoId}`)
+            .then(res => {
+                if (!res.ok) throw new Error("No se pudo cargar el detalle");
+                return res.json();
+            })
+            .then(p => {
+                // Formateamos el nombre del estado (Ej: PAGO_PENDIENTE -> Pago Pendiente)
+                const estadoAmigable = p.estado.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+
+                // Imagen de perfil de hijo
+                let avatarHTML = '';
+                if (p.fotoHijo) {
+                    avatarHTML = `<img src="${p.fotoHijo}" alt="" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0;">`;
+                } else {
+                    avatarHTML = `<div style="width: 40px; height: 40px; border-radius: 50%; background-color: #EFE9FD; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #7C3AED; flex-shrink: 0;">
+                                    <span>${p.nombreHijo.charAt(0)}</span>
+                                  </div>`;
+                }
+
+                // Lista de productos del pedido
+                let itemsHTML = '';
+                p.items.forEach(item => {
+                    const imgProd = item.imagenProducto ? item.imagenProducto : 'https://res.cloudinary.com/dqrka5zry/image/upload/v1783997395/producto-default.png';
+                    itemsHTML += `
+                        <div class="pedido-item" style="border-bottom: 1px solid #f3f4f6; padding: 0.5rem 0;">
+                            <div class="item-info" style="display: flex; align-items: center; gap: 0.5rem;">
+                                <img src="${imgProd}" alt="" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+                                <span class="item-cantidad" style="font-weight: 700; color: var(--purple);">x${item.cantidad}</span>
+                                <span class="item-nombre" style="font-size: 0.9rem;">${item.nombreProducto}</span>
+                            </div>
+                            <span class="item-precio" style="font-weight: 600;">$${item.subtotal}</span>
+                        </div>
+                    `;
+                });
+
+                // Botones de acción dinámicos según el estado
+                let accionesHTML = '';
+                if (p.estado === 'PAGO_PENDIENTE') {
+                    accionesHTML = `
+                        <div class="pedido-acciones" style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                            <form action="/spring/pedidos/retomar-pago" method="post" style="flex: 1;">
+                                <input type="hidden" name="pedidoId" value="${p.id}">
+                                <button type="submit" class="btn-accion-pagar" style="width: 100%; padding: 0.6rem; border-radius: 8px;">Pagar</button>
+                            </form>
+                            <form action="/spring/pedidos/cancelar" method="post" style="flex: 1;">
+                                <input type="hidden" name="pedidoId" value="${p.id}">
+                                <button type="submit" class="btn-accion-cancelar" style="width: 100%; padding: 0.6rem; border-radius: 8px;">Cancelar</button>
+                            </form>
+                        </div>
+                    `;
+                } else if (p.estado === 'EN_CARRITO') {
+                    accionesHTML = `
+                        <div class="pedido-acciones" style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                            <a href="/spring/carrito" class="btn-accion-pagar" style="flex: 1; text-align: center; text-decoration: none; padding: 0.6rem; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;">
+                                Continuar compra
+                            </a>
+                            <form action="/spring/pedidos/cancelar" method="post" style="flex: 1;">
+                                <input type="hidden" name="pedidoId" value="${p.id}">
+                                <button type="submit" class="btn-accion-cancelar" style="width: 100%; padding: 0.6rem; border-radius: 8px;">Cancelar</button>
+                            </form>
+                        </div>
+                    `;
+                }
+
+                // Render de la tarjeta de pedido idéntica a "Mis Pedidos"
+                contenido.innerHTML = `
+                    <div class="pedido-card" style="margin: 0; box-shadow: none; border: none;">
+                        <div class="pedido-fecha-retiro-bar" style="background-color: var(--purple-lt); color: var(--purple); font-weight: 700; padding: 0.5rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.85rem;">
+                            📅 Fecha de retiro: <strong>${p.fechaRetiro}</strong>
+                        </div>
+                        <div class="pedido-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                ${avatarHTML}
+                                <div>
+                                    <h3 style="font-size: 1.05rem; font-weight: 700; margin: 0;">Pedido #${p.id}</h3>
+                                    <span class="badge bg-light text-dark" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">${p.nombreHijo}</span>
+                                </div>
+                            </div>
+                            <span class="estado-badge ${p.estado}" style="font-size: 0.75rem; padding: 0.3rem 0.75rem;">
+                                ${estadoAmigable}
+                            </span>
+                        </div>
+
+                        <div class="pedido-items" style="margin-bottom: 1rem;">
+                            ${itemsHTML}
+                        </div>
+
+                        <div class="pedido-footer" style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; border-top: 1.5px solid #eaeaea; padding-top: 0.75rem;">
+                            <span class="pedido-total-label" style="color: var(--muted); font-size: 0.9rem;">Total del pedido</span>
+                            <span class="pedido-total-valor" style="font-size: 1.15rem; color: var(--text);">$${p.subtotal}</span>
+                        </div>
+
+                        ${accionesHTML}
+                    </div>
+                `;
+            })
+            .catch(err => {
+                contenido.innerHTML = `<div style="text-align: center; padding: 2rem; color: #dc3545; font-weight: 600;">Error: ${err.message}</div>`;
+            });
+    }
+
+    function cerrarModal(e) {
+        if (e.target.id === 'modalDetallePedido') {
+            cerrarModalDirecto();
+        }
+    }
+
+    function cerrarModalDirecto() {
+        document.getElementById('modalDetallePedido').classList.remove('active');
+    }
 </script>
 <script th:src="@{/js/drawer.js}"></script>
 

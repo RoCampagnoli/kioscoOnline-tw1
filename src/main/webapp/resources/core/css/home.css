@@ -113,6 +113,7 @@ body {
     border-radius: 10px;
     cursor: pointer;
     transition: background .2s, transform .15s, box-shadow .2s;
+    position: relative; /* 👈 AGREGAR ESTO para que el círculo flote sobre el botón */
 }
 
 .btn-carrito:hover {
@@ -121,7 +122,30 @@ body {
     transform: translateY(-1px);
     color: var(--white);
 }
-
+.carrito-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background-color: #EF4444; /* Rojo vibrante */
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    min-width: 20px;
+    height: 20px;
+    aspect-ratio: 1 / 1; /* 👈 Clave: asegura relación de aspecto circular perfecta */
+    flex-shrink: 0;      /* 👈 Clave: evita que Flexbox lo deforme o aplaste */
+    box-sizing: border-box; /* 👈 Clave: incluye el borde en el cálculo del tamaño */
+    padding:5px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--white, #ffffff); /* Línea blanca de separación */
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+    line-height: 1;
+    z-index: 10;
+}
 
 /* ── DISTRIBUCIÓN DEL CONTENIDO PRINCIPAL (MAIN) ── */
 .main {
@@ -272,7 +296,7 @@ body {
 
 /* ── SECCIONES DE PRODUCTOS EN REJILLA (GRID) ── */
 .products-section {
-    margin-bottom: 3rem;
+    margin-bottom: 1rem;
     width: 100%;
 }
 

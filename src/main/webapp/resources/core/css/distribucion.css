@@ -214,6 +214,7 @@ background: #F8F9FD;
     border: 1px solid var(--border);
     background: #F8F9FD;
     border-radius: 16px;
+    gap:0.5rem;
 }
 
 .btn-agregar-productos {

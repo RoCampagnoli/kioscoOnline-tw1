@@ -35,23 +35,9 @@
                 </div>
             </div>
 
-            <nav class="categories-nav">
-                <a class="category-chip"
-                   th:href="@{/home}"
-                   th:classappend="${param.categoria == null} ? 'active' : ''">Todos</a>
-
-                <th:block th:each="categoriaProd : ${categorias}">
-                    <a class="category-chip"
-                       th:href="@{/home(categoria=${categoriaProd.nombreCategoria})}"
-                       th:text="${categoriaProd.nombreCategoria}"
-                       th:classappend="${param.categoria != null && param.categoria[0] == categoriaProd.nombreCategoria} ? 'active' : ''"></a>
-                </th:block>
-            </nav>
-
             <section class="products-section" th:if="${productosBuscados != null || errorBusquedaProductos != null}">
                 <h2 class="subtitulos">Resultados de la búsqueda:</h2>
-                <p th:if="${errorBusquedaProductos}" th:text="${errorBusquedaProductos}">
-                </p>
+                <p th:if="${errorBusquedaProductos}" th:text="${errorBusquedaProductos}"></p>
 
                 <div class="products-grid" th:unless="${#lists.isEmpty(productosBuscados)}">
                     <div class="product-card" th:each="producto : ${productosBuscados}">
@@ -86,6 +72,29 @@
                 </div>
                 <hr class="section-divider">
             </section>
+
+            <div class="seccion-filtrar-contenedor" style="margin-top: 1rem; margin-bottom: 1.5rem;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <p style="font-size: 1.1rem; font-weight: 700; color: var(--text); margin: 0; white-space: nowrap;">
+                        Productos filtrados por categoría
+                    </p>
+                    <hr style="flex: 1; border: none; border-top: 1.5px solid var(--border); margin: 0; opacity: 0.8;">
+                </div>
+            </div>
+
+            <nav class="categories-nav">
+                <a class="category-chip"
+                   th:href="@{/home}"
+                   th:classappend="${param.categoria == null} ? 'active' : ''">Todos</a>
+
+                <th:block th:each="categoriaProd : ${categorias}">
+                    <a class="category-chip"
+                       th:href="@{/home(categoria=${categoriaProd.nombreCategoria})}"
+                       th:text="${categoriaProd.nombreCategoria}"
+                       th:classappend="${param.categoria != null && param.categoria[0] == categoriaProd.nombreCategoria} ? 'active' : ''"></a>
+                </th:block>
+            </nav>
+
             <section class="products-section">
                 <h2 class="subtitulos"
                     th:text="${param.categoria != null} ? ${param.categoria} : 'Todos los productos'"></h2>
@@ -93,7 +102,6 @@
                 <p th:if="${errorCargaProductos}" th:text="${errorCargaProductos}"></p>
 
                 <div class="products-grid">
-
                     <div class="product-card" th:each="producto : ${productos}">
                         <div class="product-image-wrapper">
                             <img th:if="${producto.imagen != null}" th:src="${producto.imagen}" alt="golo">
@@ -106,7 +114,6 @@
                             <p class="product-desc" th:text="${producto.descripcion}"></p>
                             <span class="product-price">$ <th:block th:text="${producto.precio}"></th:block></span>
                         </div>
-                        <!--MODIFICACION PARA QUE DESDE EL BOTON SE PUEDA AGREGAR O ELIMINAR DEL CARRITO-->
                         <button type="button"
                                 th:data-producto-id="${producto.id}"
                                 th:classappend="${producto.cantidad <= 0 ? 'btn-add-product sin-stock' :
@@ -122,7 +129,7 @@
                 </div>
             </section>
 
-        </section><!--FIN PANEL TIENDA-->
+        </section>
     </main>
 
 </div>
@@ -149,21 +156,45 @@
         })
             .then(res => {
                 if (res.ok) {
+                    // Buscamos el badge del carrito en el header
+                    let badge = document.querySelector('.carrito-badge');
+
                     if (esAgregado) {
-                        // Se eliminó con éxito
+                        // SE QUITÓ EL PRODUCTO
                         btn.textContent = '+ Agregar al carrito';
                         btn.classList.remove('agregado');
-                        reproducirSonido('sonidoQuitar');   // 👈 nuevo
+                        reproducirSonido('sonidoQuitar');
 
+                        // 🔴 Restamos 1 al globito
+                        if (badge) {
+                            let cant = parseInt(badge.textContent) - 1;
+                            if (cant <= 0) {
+                                badge.remove(); // Si llega a 0, hacemos desaparecer el globito
+                            } else {
+                                badge.textContent = cant;
+                            }
+                        }
                     } else {
-                        // Se agregó con éxito
+                        // SE AGREGÓ EL PRODUCTO
                         btn.textContent = '✓ Agregado (Quitar)';
                         btn.classList.add('agregado');
-                        reproducirSonido('sonidoAgregar');   // 👈 nuevo
+                        reproducirSonido('sonidoAgregar');
 
+                        // 🔴 Sumamos 1 al globito (o lo creamos si no existía)
+                        if (badge) {
+                            badge.textContent = parseInt(badge.textContent) + 1;
+                        } else {
+                            // Si no existía el globito rojo (carrito vacío), lo creamos e insertamos
+                            const btnCarrito = document.querySelector('.btn-carrito');
+                            if (btnCarrito) {
+                                const nuevoBadge = document.createElement('span');
+                                nuevoBadge.className = 'carrito-badge';
+                                nuevoBadge.textContent = '1';
+                                btnCarrito.appendChild(nuevoBadge);
+                            }
+                        }
                     }
                 } else {
-                    // Si falla, revertimos al texto correspondiente
                     btn.textContent = esAgregado ? '✓ Agregado (Quitar)' : '+ Agregar al carrito';
                 }
             })

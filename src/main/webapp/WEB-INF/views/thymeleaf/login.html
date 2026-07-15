@@ -65,7 +65,7 @@
 
                 <div class="extras">
                     <label class="remember">
-                        <input type="checkbox" name="rememberMe">
+                        <input type="checkbox" name="rememberMe" th:checked="${rememberMeChecked}">
                         <span>Recordarme</span>
                     </label>
                     <a th:href="@{/cambiarContrasenia}" class="forgot">¿Olvidaste tu contraseña?</a>
