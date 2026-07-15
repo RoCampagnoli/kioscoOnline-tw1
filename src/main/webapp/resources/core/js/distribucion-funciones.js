@@ -55,37 +55,83 @@ function configurarFechaRetiro() {
 }
 
 function configurarEnvioFormulario() {
-  const form = document.getElementById("formDistribucion");
-  if (!form) return;
+    const form = document.getElementById("formDistribucion");
+    if (!form) return;
 
-  form.addEventListener("submit", function (e) {
-    const cantidades = document.querySelectorAll(".qty-input");
-    const hayAlgunaCantidad = Array.from(cantidades)
-      .some((input) => parseInt(input.value) > 0);
+    form.addEventListener("submit", function (e) {
+        const fechaInput = document.getElementById("fechaRetiro");
 
-    if (!hayAlgunaCantidad) {
-      e.preventDefault();
+        // 1. Validar si tiene fecha seleccionada
+        const tieneFecha = fechaInput && fechaInput.value.trim() !== "";
 
-      const alertasViejas = document.querySelectorAll(".alerta-mensaje");
-      alertasViejas.forEach(alerta => alerta.remove());
+        // 2. Validar que CADA tarjeta de producto tenga al menos 1 unidad asignada en total
+        const productosCards = document.querySelectorAll("[data-producto-id]");
+        let todosLosProductosTienenCantidad = true;
+        let productosSinAsignar = [];
 
-      const nuevaAlerta = document.createElement("div");
-      nuevaAlerta.className = "alerta-mensaje alerta-error d-flex align-items-center gap-2";
-      nuevaAlerta.innerHTML = `
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="20" height="20">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-    </svg>
-    <span>Debe asignar al menos una unidad de algún producto a sus hijos antes de confirmar.</span>
-  `;
+        productosCards.forEach((card) => {
+            const inputs = card.querySelectorAll(".qty-input");
 
-      const banner = document.querySelector(".banner-titulos");
-      if (banner) {
-        banner.insertAdjacentElement("afterend", nuevaAlerta);
-      }
+            // Sumamos todas las cantidades asignadas a los hijos para este producto específico
+            const totalPorProducto = Array.from(inputs)
+                .reduce((sum, input) => sum + parseInt(input.value || 0), 0);
 
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  });
+            if (totalPorProducto === 0) {
+                todosLosProductosTienenCantidad = false;
+
+                // Obtenemos el nombre del producto para personalizar la alerta
+                const nombreProd = card.querySelector(".producto-nombre").textContent.trim();
+                productosSinAsignar.push(nombreProd);
+            }
+        });
+
+        // 3. Si falta la fecha o algún producto quedó en 0 total, frenamos el submit
+        if (!tieneFecha || !todosLosProductosTienenCantidad) {
+            e.preventDefault(); // Evita que se envíe el formulario
+
+            // Limpiamos alertas viejas para no acumularlas
+            const alertasViejas = document.querySelectorAll(".alerta-mensaje");
+            alertasViejas.forEach(alerta => alerta.remove());
+
+            // Creamos la nueva alerta
+            const nuevaAlerta = document.createElement("div");
+            nuevaAlerta.className = "alerta-mensaje alerta-error d-flex align-items-center gap-2";
+
+            let mensajeError = "";
+
+            if (!tieneFecha && !todosLosProductosTienenCantidad) {
+                mensajeError = "Debe seleccionar una fecha de retiro y asignar cantidades para todos los productos de la lista.";
+            } else if (!tieneFecha) {
+                mensajeError = "Por favor, seleccione la fecha de retiro en el calendario antes de continuar.";
+                if (fechaInput) {
+                    fechaInput.focus(); // Abre automáticamente el almanaque
+                }
+            } else {
+                // Alerta súper personalizada y amigable
+                if (productosSinAsignar.length === 1) {
+                    mensajeError = `Debe asignar al menos una unidad para: "${productosSinAsignar[0]}". Si no lo quiere, use el botón "Eliminar producto".`;
+                } else {
+                    mensajeError = "Todos los productos del carrito deben tener al menos una unidad distribuida. Elimine los que no desee llevar.";
+                }
+            }
+
+            nuevaAlerta.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="20" height="20">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+        </svg>
+        <span>${mensajeError}</span>
+      `;
+
+            // Insertamos la alerta de error justo debajo del banner de títulos
+            const banner = document.querySelector(".banner-titulos");
+            if (banner) {
+                banner.insertAdjacentElement("afterend", nuevaAlerta);
+            }
+
+            // Scroll suave hacia arriba para ver el error
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+    });
 }
 
 function guardarYVolverAlHome() {

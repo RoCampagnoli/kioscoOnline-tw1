@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.*;
 
 import com.tallerwebi.dominio.Pagos.ServicioMercadoPago;
+import com.tallerwebi.dominio.Pedidos.EstadoPedido;
 import com.tallerwebi.dominio.Pedidos.Pedido;
 import com.tallerwebi.dominio.Pedidos.ServicioPedido;
 import com.tallerwebi.dominio.Usuario.Usuario;
@@ -46,7 +47,7 @@ public class ControladorMisPedidosTest {
   @Test
   public void siElUsuarioNoEstaLogueadoAlVerMisPedidosDebeRedirigirAlLogin() {
     when(this.sessionMock.getAttribute("USUARIO")).thenReturn(null);
-    ModelAndView mav = controladorMisPedidos.verMisPedidos(sessionMock);
+    ModelAndView mav = controladorMisPedidos.verMisPedidos(sessionMock, null);
     assertThat(mav.getViewName(), equalTo("redirect:/login"));
   }
 
@@ -58,7 +59,7 @@ public class ControladorMisPedidosTest {
     List<Pedido> pedidos = List.of(pedido);
     when(servicioPedidoMock.obtenerTodosLosPedidos(1L)).thenReturn(pedidos);
 
-    ModelAndView mav = controladorMisPedidos.verMisPedidos(sessionMock);
+    ModelAndView mav = controladorMisPedidos.verMisPedidos(sessionMock, null);
 
     assertThat(mav.getViewName(), equalTo("mis-pedidos"));
     assertThat(mav.getModel().get("usuario"), equalTo(usuarioMock));
@@ -73,6 +74,65 @@ public class ControladorMisPedidosTest {
       pedidosPorFecha.values().stream().flatMap(List::stream).collect(Collectors.toList()),
       equalTo(pedidos)
     );
+  }
+
+  @Test
+  public void siSeFiltraPorEstadoDebeMostrarSoloLosPedidosDeEseEstado() {
+    Pedido pedidoEnCarrito = mock(Pedido.class);
+    when(pedidoEnCarrito.getFecha()).thenReturn(new Date());
+    when(pedidoEnCarrito.getEstado()).thenReturn(EstadoPedido.EN_CARRITO);
+
+    Pedido pedidoPagado = mock(Pedido.class);
+    when(pedidoPagado.getFecha()).thenReturn(new Date());
+    when(pedidoPagado.getEstado()).thenReturn(EstadoPedido.PAGADO);
+
+    when(servicioPedidoMock.obtenerTodosLosPedidos(1L))
+      .thenReturn(List.of(pedidoEnCarrito, pedidoPagado));
+
+    ModelAndView mav = controladorMisPedidos.verMisPedidos(sessionMock, "PAGADO");
+
+    @SuppressWarnings("unchecked")
+    Map<String, List<Pedido>> pedidosPorFecha = (Map<String, List<Pedido>>) mav
+      .getModel()
+      .get("pedidosPorFecha");
+
+    List<Pedido> pedidosFiltrados = pedidosPorFecha
+      .values()
+      .stream()
+      .flatMap(List::stream)
+      .collect(Collectors.toList());
+
+    assertThat(pedidosFiltrados, equalTo(List.of(pedidoPagado)));
+    assertThat(mav.getModel().get("estadoActual"), equalTo("PAGADO"));
+  }
+
+  @Test
+  public void siElFiltroEsTodosDebeMostrarTodosLosPedidos() {
+    Pedido pedidoEnCarrito = mock(Pedido.class);
+    when(pedidoEnCarrito.getFecha()).thenReturn(new Date());
+    when(pedidoEnCarrito.getEstado()).thenReturn(EstadoPedido.EN_CARRITO);
+
+    Pedido pedidoPagado = mock(Pedido.class);
+    when(pedidoPagado.getFecha()).thenReturn(new Date());
+    when(pedidoPagado.getEstado()).thenReturn(EstadoPedido.PAGADO);
+
+    List<Pedido> todos = List.of(pedidoEnCarrito, pedidoPagado);
+    when(servicioPedidoMock.obtenerTodosLosPedidos(1L)).thenReturn(todos);
+
+    ModelAndView mav = controladorMisPedidos.verMisPedidos(sessionMock, "TODOS");
+
+    @SuppressWarnings("unchecked")
+    Map<String, List<Pedido>> pedidosPorFecha = (Map<String, List<Pedido>>) mav
+      .getModel()
+      .get("pedidosPorFecha");
+
+    List<Pedido> pedidosMostrados = pedidosPorFecha
+      .values()
+      .stream()
+      .flatMap(List::stream)
+      .collect(Collectors.toList());
+
+    assertThat(pedidosMostrados.size(), equalTo(2));
   }
 
   @Test

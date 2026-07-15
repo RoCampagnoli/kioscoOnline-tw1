@@ -318,8 +318,9 @@ public class ServicioPedidoTest {
   }
 
   @Test
-  public void alActualizarPedidoExistenteSiLaListaDeItemsVieneVaciaDebeCancelarElPedido()
+  public void alActualizarPedidoExistenteSiLaListaDeItemsVieneVaciaDebeEliminarElPedido()
     throws ProductoSinStockException {
+    // 1. GIVEN (Preparación)
     Pedido pedidoOriginal = mock(Pedido.class);
     Hijo hijoMock = mock(Hijo.class);
 
@@ -331,6 +332,7 @@ public class ServicioPedidoTest {
     // Pasamos un Map vacío (el usuario desmarcó todos los productos para este hijo)
     Map<Long, List<ItemDistribucionDTO>> listaPorHijo = Map.of();
 
+    // 2. WHEN (Ejecución)
     servicioPedido.actualizarPedidoExistente(
       1L,
       listaPorHijo,
@@ -338,7 +340,11 @@ public class ServicioPedidoTest {
       usuarioMock
     );
 
-    verify(pedidoOriginal).setEstado(EstadoPedido.CANCELADO);
-    verify(pedidoOriginal).setSubtotal(0.0);
+    // 3. THEN (Verificación de la nueva lógica)
+    // Verificamos que se haya invocado al repositorio para borrar el pedido vacío
+    verify(repositorioPedidoMock, times(1)).eliminarPedidoVacio(pedidoOriginal);
+
+    // Verificamos que NO se intente guardar el pedido posteriormente ya que fue borrado
+    verify(repositorioPedidoMock, never()).guardar(pedidoOriginal);
   }
 }

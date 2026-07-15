@@ -23,11 +23,7 @@
     <div th:if="${usuario.rol == 'CLIENTE'}" th:replace="fragmentos/header :: header"></div>
 
     <main class="main">
-        <section class="panel-cliente">
             <div th:replace="fragmentos/panelIzqCliente :: panelCliente"></div>
-            <a th:href="@{/home}" class="btn-volver"> Ir a Tienda</a>
-        </section>
-
 
         <!-- PANEL PRINCIPAL PERFIL -->
         <section class="panel-tienda">

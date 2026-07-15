@@ -9,120 +9,133 @@
     <link rel="stylesheet" th:href="@{/css/login.css}" />
     <link rel="stylesheet" th:href="@{/css/home.css}" />
     <link rel="stylesheet" th:href="@{/css/carrito.css}" />
+    <link rel="stylesheet" th:href="@{/css/componentesYAlertas.css}" />
+
 </head>
 
 <body>
 <div class="container-fluid">
     <div th:replace="fragmentos/header :: header"></div>
 
-    <div class="app-container">
-        <main class="cart-layout">
+    <main class="main">
+            <div th:replace="fragmentos/panelIzqCliente :: panelCliente"></div>
 
-            <section class="cart-items-section">
-                <h2 class="section-title">Distribución de pedidos confirmada</h2>
+        <section class="panel-tienda">
 
-                <div th:if="${!#lists.isEmpty(pedidos)}" class="fecha-retiro-info">
-                    <strong>📅 Fecha de retiro:</strong>
-                    <span th:text="${pedidos[0].fechaRetiro}"></span>
+            <div class="banner-titulos">
+                <div class="banner-titulos-texto">
+                    <h1>Distribución de pedidos confirmada</h1>
+                    <div th:if="${!#lists.isEmpty(pedidos)}" class="fecha-retiro-banner">
+                        📅 Fecha de retiro: <span th:text="${pedidos[0].fechaRetiro}"></span>
+                    </div>
                 </div>
+            </div>
 
-                <div th:if="${#lists.isEmpty(pedidos)}" class="cart-items-list">
-                    <p>No hay pedidos pendientes.</p>
-                    <a th:href="@{/home}" class="btn-primary" style="text-align:center; text-decoration:none; display:block; padding: 1rem;">
-                        + Agregar productos
-                    </a>
-                </div>
+            <div class="cart-layout">
 
-                <div th:unless="${#lists.isEmpty(pedidos)}" class="cart-items-list">
-                    <div class="cart-item-card" th:each="pedido : ${pedidos}" style="flex-direction: column; align-items: flex-start; gap: 1rem;">
+                <section class="cart-items-section">
 
-                        <!-- Nombre del hijo -->
-                        <div style="display: flex; align-items: center; gap: 0.75rem;">
-                            <div style="width: 36px; height: 36px; border-radius: 50%; background-color: #EFE9FD; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #7C3AED;">
-                                <span th:text="${#strings.substring(pedido.hijo.nombre, 0, 1)}"></span>
+                    <div th:if="${#lists.isEmpty(pedidos)}" class="cart-items-list">
+                        <p>No hay pedidos pendientes.</p>
+                        <a th:href="@{/home}" class="btn-primary" style="text-align:center; text-decoration:none; display:block; padding: 1rem;">
+                            + Agregar productos
+                        </a>
+                    </div>
+
+                    <div th:unless="${#lists.isEmpty(pedidos)}" class="cart-items-list">
+                        <div class="cart-item-card" th:each="pedido : ${pedidos}" style="flex-direction: column; align-items: flex-start; gap: 1rem;">
+
+                            <!-- Nombre del hijo -->
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="width: 36px; height: 36px; border-radius: 50%; background-color: #EFE9FD; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #7C3AED;">
+                                    <span th:text="${#strings.substring(pedido.hijo.nombre, 0, 1)}"></span>
+                                </div>
+                                <span style="font-size: 1.1rem; font-weight: 700;" th:text="${pedido.hijo.nombre}"></span>
                             </div>
-                            <span style="font-size: 1.1rem; font-weight: 700;" th:text="${pedido.hijo.nombre}"></span>
+
+                            <!-- Items del pedido -->
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <tbody>
+                                <tr th:each="item : ${pedido.items}" style="border-bottom: 1px solid #f0f0f0;">
+                                    <td style="padding: 0.5rem 0; color: #444;" th:text="${item.producto.nombre}"></td>
+                                    <td style="padding: 0.5rem; color: #888; text-align: center;"
+                                        th:text="${item.cantidad} + 'x $' + ${item.precioUnitario}"></td>
+                                    <td style="padding: 0.5rem 0; font-weight: 600; text-align: right;"
+                                        th:text="'$' + ${item.subtotal}"></td>
+                                </tr>
+                                </tbody>
+                            </table>
+
+                            <!-- Subtotal del hijo -->
+                            <div style="display: flex; justify-content: flex-end; width: 100%; font-weight: 700; color: #333;">
+                                Subtotal: $<span th:text="${pedido.subtotal}"></span>
+                            </div>
                         </div>
 
-                        <!-- Items del pedido -->
-                        <table style="width: 100%; border-collapse: collapse;">
-                            <tbody>
-                            <tr th:each="item : ${pedido.items}" style="border-bottom: 1px solid #f0f0f0;">
-                                <td style="padding: 0.5rem 0; color: #444;" th:text="${item.producto.nombre}"></td>
-                                <td style="padding: 0.5rem; color: #888; text-align: center;"
-                                    th:text="${item.cantidad} + 'x $' + ${item.precioUnitario}"></td>
-                                <td style="padding: 0.5rem 0; font-weight: 600; text-align: right;"
-                                    th:text="'$' + ${item.subtotal}"></td>
-                            </tr>
-                            </tbody>
-                        </table>
+                        <!-- Botón modificar y terminar más tarde -->
+                        <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                            <a th:href="@{/distribucion}" class="btn-primary-disabled"
+                               style="flex: 1; text-align: center; text-decoration: none; padding: 0.75rem;">
+                                Modificar pedidos
+                            </a>
+                            <a th:href="@{/carrito/terminar-mas-tarde}" class="btn-primary"
+                               style="flex: 1; text-align: center; text-decoration: none; padding: 0.75rem;">
+                                Terminar más tarde
+                            </a>
+                        </div>
 
-                        <!-- Subtotal del hijo -->
-                        <div style="display: flex; justify-content: flex-end; width: 100%; font-weight: 700; color: #333;">
-                            Subtotal: $<span th:text="${pedido.subtotal}"></span>
+                    </div>
+                </section>
+
+                <div th:unless="${#lists.isEmpty(pedidos)}" class="cart-divider"></div>
+
+                <aside class="cart-summary-section">
+                    <div class="summary-card">
+                        <h2 class="summary-title">Subtotales</h2>
+
+                        <!-- Subtotal por hijo -->
+                        <div th:each="pedido : ${pedidos}" class="summary-row">
+                            <span th:text="${pedido.hijo.nombre}"></span>
+                            <span>$<span th:text="${pedido.subtotal}"></span></span>
+                        </div>
+
+                        <hr class="summary-divider">
+
+                        <div class="summary-row total-row">
+                            <span>Total pedido</span>
+                            <span>$<span th:text="${total}"></span></span>
+                        </div>
+
+                        <form th:action="@{/pagar}" method="GET" style="width: 100%;">
+                            <button th:if="${!#lists.isEmpty(pedidos)}" type="submit" class="btn-primary" style="width: 100%; cursor: pointer;">
+                                Proceder al pago
+                            </button>
+                            <button class="btn-primary-disabled" th:if="${#lists.isEmpty(pedidos)}" disabled>
+                                Proceder al pago
+                            </button>
+                        </form>
+
+                        <form th:if="${!#lists.isEmpty(pedidos)}" th:action="@{/carrito/pagar-despues}" method="POST" style="width: 100%; margin-top: 0.5rem;">
+                            <button type="submit" class="btn-primary-disabled" style="width: 100%; cursor: pointer;">
+                                Pagar más tarde
+                            </button>
+                        </form>
+
+                        <div th:if="${error}" class="alerta-mensaje alerta-error alert-error-custom" style="margin-top: 15px; justify-content: center;">
+                            ⚠️ <span th:text="${error}"></span>
+                        </div>
+
+                        <div class="secure-checkout">
+                            <span>🔒 Plataforma 100% segura</span>
+                            <p>Tus datos están protegidos</p>
                         </div>
                     </div>
+                </aside>
 
-                    <!-- Botón modificar  y terminar mas tarde-->
-                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
-                        <a th:href="@{/distribucion}" class="btn-primary-disabled"
-                           style="flex: 1; text-align: center; text-decoration: none; padding: 0.75rem;">
-                            Modificar pedidos
-                        </a>
-                        <a th:href="@{/carrito/terminar-mas-tarde}" class="btn-primary"
-                           style="flex: 1; text-align: center; text-decoration: none; padding: 0.75rem;">
-                            Terminar más tarde
-                        </a>
-                    </div>
+            </div>
 
-                </div>
-            </section>
-
-            <aside class="cart-summary-section">
-                <div class="summary-card">
-                    <h2 class="summary-title">Subtotales</h2>
-
-                    <!-- Subtotal por hijo -->
-                    <div th:each="pedido : ${pedidos}" class="summary-row">
-                        <span th:text="${pedido.hijo.nombre}"></span>
-                        <span>$<span th:text="${pedido.subtotal}"></span></span>
-                    </div>
-
-                    <hr class="summary-divider">
-
-                    <div class="summary-row total-row">
-                        <span>Total pedido</span>
-                        <span>$<span th:text="${total}"></span></span>
-                    </div>
-
-                    <form th:action="@{/pagar}" method="GET" style="width: 100%;">
-                        <button th:if="${!#lists.isEmpty(pedidos)}" type="submit" class="btn-primary" style="width: 100%; cursor: pointer;">
-                            Proceder al pago
-                        </button>
-                        <button class="btn-primary-disabled" th:if="${#lists.isEmpty(pedidos)}" disabled>
-                            Proceder al pago
-                        </button>
-                    </form>
-
-                    <form th:if="${!#lists.isEmpty(pedidos)}" th:action="@{/carrito/pagar-despues}" method="POST" style="width: 100%; margin-top: 0.5rem;">
-                        <button type="submit" class="btn-primary-disabled" style="width: 100%; cursor: pointer;">
-                            Pagar más tarde
-                        </button>
-                    </form>
-
-                    <div th:if="${error}" class="alerta-mensaje alerta-error alert-error-custom" style="margin-top: 15px; justify-content: center;">
-                        ⚠️ <span th:text="${error}"></span>
-                    </div>
-
-                    <div class="secure-checkout">
-                        <span>🔒 Plataforma 100% segura</span>
-                        <p>Tus datos están protegidos</p>
-                    </div>
-                </div>
-            </aside>
-
-        </main>
-    </div>
+        </section>
+    </main>
 </div>
 </body>
 </html>

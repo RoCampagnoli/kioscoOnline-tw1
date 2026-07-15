@@ -23,4 +23,5 @@ public interface RepositorioPedido {
   void marcarEnCarritoComoPendiente(Long usuarioId);
 
   Pedido buscarPedidoPorId(Long idPedido);
+  void eliminarPedidoVacio(Pedido pedido);
 }

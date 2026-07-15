@@ -195,4 +195,9 @@ public class RepositorioPedidoImpl implements RepositorioPedido {
       .setParameter("idPedido", idPedido)
       .uniqueResult();
   }
+
+  @Override
+  public void eliminarPedidoVacio(Pedido pedido) {
+    sessionFactory.getCurrentSession().delete(pedido);
+  }
 }

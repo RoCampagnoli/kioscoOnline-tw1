@@ -173,10 +173,9 @@ public class ServicioPedidoImpl implements ServicioPedido {
     List<ItemDistribucionDTO> nuevosItems = listaPorHijo.get(hijoId);
 
     if (nuevosItems == null || nuevosItems.isEmpty()) {
-      // Si en la modificación se le quitaron todos los productos a este hijo, lo pasamos a cancelado
-      pedido.setEstado(EstadoPedido.CANCELADO);
-      pedido.setSubtotal(0.0);
-      return;
+      // 💡 NUEVA LÓGICA: Si no hay ítems, borramos físicamente el pedido para no dejar basura
+      repositorioPedido.eliminarPedidoVacio(pedido);
+      return; // Finaliza la ejecución sin intentar guardar o procesar stock
     }
 
     // 6. Procesamos y re-descontamos el stock con los nuevos valores ingresados

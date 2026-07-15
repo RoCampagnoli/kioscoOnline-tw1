@@ -24,11 +24,8 @@
     <div th:replace="fragmentos/header :: header"></div>
 
     <main class="main">
-        <section class="panel-cliente">
             <div th:replace="fragmentos/panelIzqCliente :: panelCliente"></div>
-            <a href="/spring/perfil" class="btn-volver"> Mi perfil</a>
 
-        </section>
 
         <section class="panel-tienda">
             <div class="banner-titulos">
@@ -130,6 +127,9 @@
 
 </div>
 </body>
+<audio id="sonidoAgregar" th:src="@{/sonidos/agregar.mp3}" preload="auto"></audio>
+<audio id="sonidoQuitar" th:src="@{/sonidos/quitar.mp3}" preload="auto"></audio>
+
 <script>
 
     function alternarCarrito(btn) {
@@ -153,10 +153,14 @@
                         // Se eliminó con éxito
                         btn.textContent = '+ Agregar al carrito';
                         btn.classList.remove('agregado');
+                        reproducirSonido('sonidoQuitar');   // 👈 nuevo
+
                     } else {
                         // Se agregó con éxito
                         btn.textContent = '✓ Agregado (Quitar)';
                         btn.classList.add('agregado');
+                        reproducirSonido('sonidoAgregar');   // 👈 nuevo
+
                     }
                 } else {
                     // Si falla, revertimos al texto correspondiente
@@ -169,6 +173,16 @@
             .finally(() => {
                 btn.disabled = false;
             });
+    }
+    function reproducirSonido(id) {
+        const audio = document.getElementById(id);
+        if (!audio) return;
+        audio.currentTime = 0;
+        audio.play().catch(() => {
+            // El navegador puede bloquear el autoplay hasta que haya interacción del
+            // usuario; como esto se dispara por un click, no debería ocurrir, pero lo
+            // atajamos igual para que no rompa la consola.
+        });
     }
 </script>
 <script th:src="@{/js/drawer.js}"></script>
