@@ -4,7 +4,9 @@
 .fc .fc-toolbar-title {
     text-transform: capitalize !important;
 }
-
+.calendario-leyenda .estado-badge {
+    cursor: default;
+}
 /* --- ESTILOS DEL POP-UP MODAL DEL CALENDARIO --- */
 .modal-overlay {
     position: fixed;
@@ -71,6 +73,9 @@
     background-color: #a9a7a7 !important;
 }
 
+.fc-event.estado-badge {
+    cursor: pointer;
+}
 .fc-event.estado-badge.EN_CARRITO .fc-event-title {
     color: #1A1A2E !important;
 }

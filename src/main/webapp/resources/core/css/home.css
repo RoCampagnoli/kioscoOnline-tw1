@@ -16,6 +16,91 @@ body {
     margin: 0;
     padding: 0;
 }
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.modal-card-contenedor {
+    background-color: var(--white, #ffffff);
+    width: 90%;
+    max-width: 420px;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    position: relative;
+    transform: translateY(20px);
+    transition: transform 0.25s ease;
+}
+
+.modal-overlay.active .modal-card-contenedor {
+    transform: translateY(0);
+}
+
+.modal-btn-cerrar {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 1.75rem;
+    cursor: pointer;
+    color: var(--muted, #9ca3af);
+    line-height: 1;
+}
+
+.modal-btn-cerrar:hover {
+    color: var(--text, #1f2937);
+}
+
+.modal-sin-hijos-contenido {
+    text-align: center;
+    padding-top: 0.5rem;
+}
+
+.modal-sin-hijos-contenido h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.modal-sin-hijos-contenido p {
+    color: var(--muted, #6b7280);
+    font-size: 0.9rem;
+    margin-bottom: 1.25rem;
+}
+
+.btn-ir-a-hijos {
+    display: inline-block;
+    background-color: var(--purple, #7C3AED);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    padding: 0.6rem 1.5rem;
+    border-radius: 10px;
+    transition: opacity 0.15s;
+}
+
+.btn-ir-a-hijos:hover {
+    opacity: 0.9;
+}
 /* ── HEADER / NAVBAR ESTILO MODERNO ── */
 .main-header {
     display: flex;

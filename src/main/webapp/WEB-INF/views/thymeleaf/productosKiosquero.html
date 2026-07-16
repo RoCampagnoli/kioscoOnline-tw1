@@ -102,7 +102,7 @@
                             <th class="col-categoria">Categoría</th>
                             <th class="col-precio">Precio</th>
                             <th class="col-stock">Stock</th>
-                            <th class="col-acciones text-center">Acciones</th>
+<!--                            <th class="col-acciones text-center">Acciones</th>-->
                         </tr>
                         </thead>
                         <tbody>
@@ -126,16 +126,16 @@
                             </td>
                             <td class="celda-editable text-end celda-precio" th:data-id="${prod.id}" data-campo="precio" th:text="${prod.precio}"></td>
                             <td class="celda-editable text-end celda-stock" th:data-id="${prod.id}" data-campo="cantidad" th:text="${prod.cantidad}"></td>
-                            <td class="text-center celda-alineada">
-                                <button type="button" class="btn-eliminar-tabla" th:onclick="'confirmarEliminarProducto(' + ${prod.id} + ')'" title="Eliminar producto">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <polyline points="3 6 5 6 21 6"></polyline>
-                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                        <line x1="10" y1="11" x2="10" y2="17"></line>
-                                        <line x1="14" y1="11" x2="14" y2="17"></line>
-                                    </svg>
-                                </button>
-                            </td>
+<!--                            <td class="text-center celda-alineada">-->
+<!--                                <button type="button" class="btn-eliminar-tabla" th:onclick="'confirmarEliminarProducto(' + ${prod.id} + ')'" title="Eliminar producto">-->
+<!--                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">-->
+<!--                                        <polyline points="3 6 5 6 21 6"></polyline>-->
+<!--                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>-->
+<!--                                        <line x1="10" y1="11" x2="10" y2="17"></line>-->
+<!--                                        <line x1="14" y1="11" x2="14" y2="17"></line>-->
+<!--                                    </svg>-->
+<!--                                </button>-->
+<!--                            </td>-->
                         </tr>
                         </tbody>
                     </table>

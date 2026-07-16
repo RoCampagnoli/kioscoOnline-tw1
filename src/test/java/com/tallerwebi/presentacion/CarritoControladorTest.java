@@ -26,6 +26,8 @@ import javax.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -34,7 +36,7 @@ public class CarritoControladorTest {
   private HttpSession sessionMock;
   private CarritoControlador carritoControlador;
   private ServicioCarrito serviCarritomock;
-  private ServicioHijo serviHijoMock;
+  private ServicioHijo serviHijoMock; // 👈 Declarado correctamente
   private Usuario usuarioMock;
   private Carrito carritoMock;
   private RedirectAttributes redirectAttributesMock;
@@ -49,12 +51,16 @@ public class CarritoControladorTest {
     sessionMock = mock(HttpSession.class);
     serviCarritomock = mock(ServicioCarrito.class);
     serviPedidoMock = mock(ServicioPedido.class);
+    serviHijoMock = mock(ServicioHijo.class); // 👈 Inicializado
     usuarioMock = mock(Usuario.class);
     carritoMock = mock(Carrito.class);
     productoMock = mock(Producto.class);
     itemMock = mock(ItemCarrito.class);
     hijoMock = mock(Hijo.class);
-    carritoControlador = new CarritoControlador(serviCarritomock, serviPedidoMock);
+
+    // 👈 Constructor con los 3 parámetros requeridos
+    carritoControlador = new CarritoControlador(serviCarritomock, serviPedidoMock, serviHijoMock);
+
     redirectAttributesMock = mock(RedirectAttributes.class);
 
     when(usuarioMock.getId()).thenReturn(1L);
@@ -91,6 +97,45 @@ public class CarritoControladorTest {
 
     List<Pedido> pedidos = (List<Pedido>) mv.getModel().get("pedidos");
     assertThat(pedidos.size(), equalTo(1));
+  }
+
+  // ---------- nuevos tests: agregarProducto ----------
+
+  @Test
+  public void siNoHayUsuarioLogueadoAlAgregarProductoDebeRetornarNoAutenticado() {
+    when(sessionMock.getAttribute("USUARIO")).thenReturn(null);
+
+    ResponseEntity<String> respuesta = carritoControlador.agregarProducto(1L, sessionMock);
+
+    assertThat(respuesta.getStatusCode(), equalTo(HttpStatus.UNAUTHORIZED));
+    assertThat(respuesta.getBody(), equalTo("Usuario no autenticado"));
+    verify(serviCarritomock, never()).agregarProducto(anyLong(), anyLong());
+  }
+
+  @Test
+  public void siElUsuarioNoTieneHijosCargadosAlAgregarProductoDebeRetornarSinHijos() {
+    when(sessionMock.getAttribute("USUARIO")).thenReturn(usuarioMock);
+    // Simula que el usuario no tiene hijos asociados
+    when(serviHijoMock.obtenerHijosPorUsuario(1L)).thenReturn(new ArrayList<>());
+
+    ResponseEntity<String> respuesta = carritoControlador.agregarProducto(1L, sessionMock);
+
+    assertThat(respuesta.getStatusCode(), equalTo(HttpStatus.CONFLICT));
+    assertThat(respuesta.getBody(), equalTo("SIN_HIJOS"));
+    verify(serviCarritomock, never()).agregarProducto(anyLong(), anyLong());
+  }
+
+  @Test
+  public void siElUsuarioTieneHijosDebePermitirAgregarProductoYRetornarOk() {
+    when(sessionMock.getAttribute("USUARIO")).thenReturn(usuarioMock);
+    // Simula que el usuario tiene al menos un hijo cargado
+    when(serviHijoMock.obtenerHijosPorUsuario(1L)).thenReturn(List.of(hijoMock));
+
+    ResponseEntity<String> respuesta = carritoControlador.agregarProducto(1L, sessionMock);
+
+    assertThat(respuesta.getStatusCode(), equalTo(HttpStatus.OK));
+    assertThat(respuesta.getBody(), equalTo("ok"));
+    verify(serviCarritomock).agregarProducto(1L, 1L);
   }
 
   // ---------- pagarDespues ----------

@@ -213,6 +213,7 @@ document.getElementById('btnGuardarNuevaImagen').addEventListener('click', funct
             this.innerText = "Subir";
         });
 });
+/*
 // --- LÓGICA PARA ELIMINAR PRODUCTO (MODAL INTERACTIVO) ---
 let modalEliminarInstancia = null;
 
@@ -273,6 +274,9 @@ document.getElementById('btnConfirmarEliminarDefinitivo').addEventListener('clic
             this.innerText = "Eliminar";
         });
 });
+
+*/
+
 function mostrarToast(mensaje, color) {
     const toast = document.getElementById('toast-guardado');
     toast.style.backgroundColor = color;

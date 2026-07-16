@@ -1,6 +1,8 @@
 package com.tallerwebi.presentacion;
 
 import com.tallerwebi.dominio.Carrito.ServicioCarrito;
+import com.tallerwebi.dominio.Hijos.Hijo;
+import com.tallerwebi.dominio.Hijos.ServicioHijo;
 import com.tallerwebi.dominio.Pedidos.ItemPedido;
 import com.tallerwebi.dominio.Pedidos.Pedido;
 import com.tallerwebi.dominio.Pedidos.ServicioPedido;
@@ -26,16 +28,24 @@ public class CarritoControlador {
 
   private final ServicioCarrito servicioCarrito;
   private final ServicioPedido servicioPedido;
+  private final ServicioHijo servicioHijo; // 👈 nuevo
+
   private static final int UN_SOLO_PEDIDO = 1;
 
   private static final String USUARIO = "USUARIO";
   private static final String CARRITO = "carrito";
   private static final String PRODUCTO_ID = "productoId";
+  private static final String SIN_HIJOS = "SIN_HIJOS"; // 👈 nuevo
 
   @Autowired
-  public CarritoControlador(ServicioCarrito servicioCarrito, ServicioPedido servicioPedido) {
+  public CarritoControlador(
+    ServicioCarrito servicioCarrito,
+    ServicioPedido servicioPedido,
+    ServicioHijo servicioHijo
+  ) {
     this.servicioCarrito = servicioCarrito;
     this.servicioPedido = servicioPedido;
+    this.servicioHijo = servicioHijo;
   }
 
   @RequestMapping(path = "/carrito/agregar", method = RequestMethod.POST)
@@ -45,6 +55,15 @@ public class CarritoControlador {
     HttpSession session
   ) {
     Usuario usuario = (Usuario) session.getAttribute(USUARIO);
+    if (usuario == null) {
+      return ResponseEntity.status(401).body("Usuario no autenticado");
+    }
+
+    // 👇 Validación nueva: sin hijos cargados, no se puede agregar nada
+    List<Hijo> hijos = servicioHijo.obtenerHijosPorUsuario(usuario.getId());
+    if (hijos == null || hijos.isEmpty()) {
+      return ResponseEntity.status(409).body(SIN_HIJOS);
+    }
 
     try {
       servicioCarrito.agregarProducto(productoId, usuario.getId());

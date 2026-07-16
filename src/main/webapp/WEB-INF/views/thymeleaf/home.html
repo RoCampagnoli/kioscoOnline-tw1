@@ -133,6 +133,16 @@
     </main>
 
 </div>
+<div id="modalSinHijos" class="modal-overlay" onclick="cerrarModalSinHijos(event)">
+    <div class="modal-card-contenedor modal-sin-hijos" onclick="event.stopPropagation()">
+        <button class="modal-btn-cerrar" onclick="cerrarModalSinHijosDirecto()">&times;</button>
+        <div class="modal-sin-hijos-contenido">
+            <h3>No podés agregar productos todavía</h3>
+            <p>Para agregar productos al carrito primero necesitás cargar al menos un hijo en el sistema.</p>
+            <a href="/spring/vistaHijos" class="btn-ir-a-hijos">Ir a Mis Hijos</a>
+        </div>
+    </div>
+</div>
 </body>
 <audio id="sonidoAgregar" th:src="@{/sonidos/agregar.mp3}" preload="auto"></audio>
 <audio id="sonidoQuitar" th:src="@{/sonidos/quitar.mp3}" preload="auto"></audio>
@@ -155,6 +165,15 @@
             body: 'productoId=' + productoId
         })
             .then(res => {
+                if (res.status === 409) {
+                    return res.text().then(msg => {
+                        if (msg === 'SIN_HIJOS') {
+                            abrirModalSinHijos();
+                        }
+                        btn.textContent = '+ Agregar al carrito';
+                        return null; // cortamos la cadena, no seguimos al bloque de éxito
+                    });
+                }
                 if (res.ok) {
                     // Buscamos el badge del carrito en el header
                     let badge = document.querySelector('.carrito-badge');
@@ -214,6 +233,20 @@
             // usuario; como esto se dispara por un click, no debería ocurrir, pero lo
             // atajamos igual para que no rompa la consola.
         });
+    }
+    // --- Funciones del modal "Sin hijos" ---
+    function abrirModalSinHijos() {
+        document.getElementById('modalSinHijos').classList.add('active');
+    }
+
+    function cerrarModalSinHijos(e) {
+        if (e.target.id === 'modalSinHijos') {
+            cerrarModalSinHijosDirecto();
+        }
+    }
+
+    function cerrarModalSinHijosDirecto() {
+        document.getElementById('modalSinHijos').classList.remove('active');
     }
 </script>
 <script th:src="@{/js/drawer.js}"></script>
