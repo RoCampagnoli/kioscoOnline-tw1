@@ -1,218 +1,223 @@
 // --- LÓGICA DE EDICIÓN EXCEL (TABLA) ---
-document.querySelectorAll('.celda-editable').forEach(celda => {
-    celda.addEventListener('click', function() {
-        if (this.querySelector('input') || this.querySelector('select')) return;
+document.querySelectorAll(".celda-editable").forEach(celda => {
+  celda.addEventListener("click", function () {
+    if (this.querySelector("input") || this.querySelector("select")) return;
 
-        const id = this.getAttribute('data-id');
-        const campo = this.getAttribute('data-campo');
+    const id = this.getAttribute("data-id");
+    const campo = this.getAttribute("data-campo");
 
-        // Obtenemos el valor real. Si es categoría, usamos el ID que guardamos en la celda
-        let valorOriginal = this.innerText.trim();
-        if (campo === 'categoria') {
-            valorOriginal = this.getAttribute('data-categoria-id') || "";
+    // Obtenemos el valor real. Si es categoría, usamos el ID que guardamos en la celda
+    let valorOriginal = this.innerText.trim();
+    if (campo === "categoria") {
+      valorOriginal = this.getAttribute("data-categoria-id") || "";
+    }
+
+    if (campo === "categoria") {
+      const select = document.createElement("select");
+      select.className = "select-edicion-tabla";
+
+      const idCategoriaActual = this.getAttribute("data-categoria-id");
+
+      if (listaCategorias.length === 0) {
+        mostrarToast("❌ No hay categorías disponibles para seleccionar", "#e53e3e");
+        return;
+      }
+
+      listaCategorias.forEach(cat => {
+        const opt = document.createElement("option");
+        opt.value = cat.id;
+        opt.text = cat.nombreCategoria;
+        if (String(cat.id) === idCategoriaActual) {
+          opt.selected = true;
+        }
+        select.appendChild(opt);
+      });
+
+      this.innerHTML = "";
+      this.appendChild(select);
+      select.focus();
+
+      // Usamos un semáforo (flag) para que no se ejecute dos veces seguidas (blur y change)
+      let guardadoEnProgreso = false;
+
+      const guardarCategoria = () => {
+        if (guardadoEnProgreso) return;
+        guardadoEnProgreso = true;
+
+        const nuevoId = select.value;
+        const textoSelect = select.options[select.selectedIndex].text;
+
+        if (!nuevoId) {
+          this.innerHTML = `<span class="badge-categoria">${select.options[0].text}</span>`;
+          return;
         }
 
-        if (campo === 'categoria') {
-            const select = document.createElement('select');
-            select.className = 'select-edicion-tabla';
+        enviarCambioAlServidor(id, campo, nuevoId, this, () => {
+          this.innerHTML = `<span class="badge-categoria">${textoSelect}</span>`;
+          this.setAttribute("data-categoria-id", nuevoId);
+        }, () => {
+          // Si falla, restablecemos el texto original buscando en listaCategorias
+          const catPrevia = listaCategorias.find(c => String(c.id) === String(valorOriginal));
+          const textoPrevio = catPrevia ? catPrevia.nombreCategoria : "Sin Categoría";
+          this.innerHTML = `<span class="badge-categoria">${textoPrevio}</span>`;
+        });
+      };
 
-            const idCategoriaActual = this.getAttribute('data-categoria-id');
+      // Para evitar conflictos, priorizamos el cambio y si se pierde el foco sin cambiar, ejecutamos blur
+      select.addEventListener("change", guardarCategoria);
+      select.addEventListener("blur", () => {
+        setTimeout(() => {
+          if (!guardadoEnProgreso) {
+            guardarCategoria();
+          }
+        }, 100);
+      });
 
-            if (listaCategorias.length === 0) {
-                mostrarToast("❌ No hay categorías disponibles para seleccionar", "#e53e3e");
-                return;
-            }
+    } else {
+      const input = document.createElement("input");
+      input.type = (campo === "precio" || campo === "cantidad") ? "number" : "text";
+      if (campo === "precio") input.step = "0.01";
 
-            listaCategorias.forEach(cat => {
-                const opt = document.createElement('option');
-                opt.value = cat.id;
-                opt.text = cat.nombreCategoria;
-                if (String(cat.id) === idCategoriaActual) {
-                    opt.selected = true;
-                }
-                select.appendChild(opt);
-            });
+      input.className = "input-edicion-tabla";
+      input.value = valorOriginal;
 
-            this.innerHTML = '';
-            this.appendChild(select);
-            select.focus();
+      this.innerHTML = "";
+      this.appendChild(input);
+      input.focus();
 
-            // Usamos un semáforo (flag) para que no se ejecute dos veces seguidas (blur y change)
-            let guardadoEnProgreso = false;
+      let guardadoEnProgreso = false;
 
-            const guardarCategoria = () => {
-                if (guardadoEnProgreso) return;
-                guardadoEnProgreso = true;
+      const terminarEdicion = () => {
+        if (guardadoEnProgreso) return;
+        guardadoEnProgreso = true;
 
-                const nuevoId = select.value;
-                const textoSelect = select.options[select.selectedIndex].text;
+        const nuevoValor = input.value.trim();
 
-                if (!nuevoId) {
-                    this.innerHTML = `<span class="badge-categoria">${select.options[0].text}</span>`;
-                    return;
-                }
-
-                enviarCambioAlServidor(id, campo, nuevoId, this, () => {
-                    this.innerHTML = `<span class="badge-categoria">${textoSelect}</span>`;
-                    this.setAttribute('data-categoria-id', nuevoId);
-                }, () => {
-                    // Si falla, restablecemos el texto original buscando en listaCategorias
-                    const catPrevia = listaCategorias.find(c => String(c.id) === String(valorOriginal));
-                    const textoPrevio = catPrevia ? catPrevia.nombreCategoria : "Sin Categoría";
-                    this.innerHTML = `<span class="badge-categoria">${textoPrevio}</span>`;
-                });
-            };
-
-            // Para evitar conflictos, priorizamos el cambio y si se pierde el foco sin cambiar, ejecutamos blur
-            select.addEventListener('change', guardarCategoria);
-            select.addEventListener('blur', () => {
-                setTimeout(() => {
-                    if (!guardadoEnProgreso) {
-                        guardarCategoria();
-                    }
-                }, 100);
-            });
-
-        } else {
-            const input = document.createElement('input');
-            input.type = (campo === 'precio' || campo === 'cantidad') ? 'number' : 'text';
-            if (campo === 'precio') input.step = '0.01';
-
-            input.className = 'input-edicion-tabla';
-            input.value = valorOriginal;
-
-            this.innerHTML = '';
-            this.appendChild(input);
-            input.focus();
-
-            let guardadoEnProgreso = false;
-
-            const terminarEdicion = () => {
-                if (guardadoEnProgreso) return;
-                guardadoEnProgreso = true;
-
-                const nuevoValor = input.value.trim();
-
-                if ((campo === 'nombre' || campo === 'precio' || campo === 'cantidad') && nuevoValor === '') {
-                    mostrarToast("❌ Este campo es obligatorio", "#e53e3e");
-                    this.innerText = valorOriginal;
-                    return;
-                }
-
-                if (nuevoValor === valorOriginal) {
-                    this.innerText = valorOriginal;
-                    return;
-                }
-
-                enviarCambioAlServidor(id, campo, nuevoValor, this, () => {
-                    this.innerText = nuevoValor;
-                }, () => {
-                    this.innerText = valorOriginal;
-                });
-            };
-
-            input.addEventListener('blur', terminarEdicion);
-            input.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    input.blur();
-                }
-            });
+        if ((campo === "nombre" || campo === "precio" || campo === "cantidad") && nuevoValor === "") {
+          mostrarToast("❌ Este campo es obligatorio", "#e53e3e");
+          this.innerText = valorOriginal;
+          return;
         }
-    });
+
+        if (nuevoValor === valorOriginal) {
+          this.innerText = valorOriginal;
+          return;
+        }
+
+        enviarCambioAlServidor(id, campo, nuevoValor, this, () => {
+          this.innerText = nuevoValor;
+        }, () => {
+          this.innerText = valorOriginal;
+        });
+      };
+
+      input.addEventListener("blur", terminarEdicion);
+      input.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          input.blur();
+        }
+      });
+    }
+  });
 });
 
 function enviarCambioAlServidor(id, campo, valor, celdaHtml, exitoCallback, errorCallback) {
-    const formData = new FormData();
-    formData.append('id', id);
-    formData.append('campo', campo);
-    formData.append('valor', valor);
+  const formData = new FormData();
+  formData.append("id", id);
+  formData.append("campo", campo);
+  formData.append("valor", valor);
 
-    // Si tu Spring Controller usa rutas limpias (/productosKiosquero/editar-rapido), cámbiala aquí:
-    fetch('productosKiosquero/editar-rapido', {
-        method: 'POST',
-        body: formData
-    })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(err => { throw new Error(err.mensaje || "Error al procesar la solicitud"); });
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.exito) {
-                exitoCallback();
-                mostrarToast("✔️ Guardado exitosamente", "#2f855a");
-            } else {
-                errorCallback();
-                mostrarToast("❌ " + data.mensaje, "#e53e3e");
-            }
-        })
-        .catch(error => {
-            errorCallback();
-            mostrarToast(error.message.includes("Error") ? error.message : "❌ Error de conexión con el servidor", "#e53e3e");
+  // Si tu Spring Controller usa rutas limpias (/productosKiosquero/editar-rapido), cámbiala aquí:
+  fetch("productosKiosquero/editar-rapido", {
+    method: "POST",
+    body: formData
+  })
+    .then(response => {
+      if (!response.ok) {
+        return response.json().then(err => {
+          throw new Error(err.mensaje || "Error al procesar la solicitud");
         });
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.exito) {
+        exitoCallback();
+        mostrarToast("✔️ Guardado exitosamente", "#2f855a");
+      } else {
+        errorCallback();
+        mostrarToast("❌ " + data.mensaje, "#e53e3e");
+      }
+    })
+    .catch(error => {
+      errorCallback();
+      mostrarToast(error.message.includes("Error") ? error.message : "❌ Error de conexión con el servidor", "#e53e3e");
+    });
 }
 
 // --- LÓGICA DE SUBIDA DE IMAGEN INDIVIDUAL ---
 let modalImagenInstancia = null;
 
 function abrirModalImagen(productoId) {
-    document.getElementById('cambiarImagenProductoId').value = productoId;
-    document.getElementById('nuevaImagenFile').value = '';
-    document.getElementById('quitarFondoImgRapida').checked = false;
+  document.getElementById("cambiarImagenProductoId").value = productoId;
+  document.getElementById("nuevaImagenFile").value = "";
+  document.getElementById("quitarFondoImgRapida").checked = false;
 
-    modalImagenInstancia = new bootstrap.Modal(document.getElementById('cambiarImagenModal'));
-    modalImagenInstancia.show();
+  modalImagenInstancia = new bootstrap.Modal(document.getElementById("cambiarImagenModal"));
+  modalImagenInstancia.show();
 }
 
-document.getElementById('btnGuardarNuevaImagen').addEventListener('click', function() {
-    const id = document.getElementById('cambiarImagenProductoId').value;
-    const inputImg = document.getElementById('nuevaImagenFile');
-    const quitarFondo = document.getElementById('quitarFondoImgRapida').checked;
+document.getElementById("btnGuardarNuevaImagen").addEventListener("click", function () {
+  const id = document.getElementById("cambiarImagenProductoId").value;
+  const inputImg = document.getElementById("nuevaImagenFile");
+  const quitarFondo = document.getElementById("quitarFondoImgRapida").checked;
 
-    if (inputImg.files.length === 0) {
-        mostrarToast("❌ Por favor, selecciona una imagen", "#e53e3e");
-        return;
-    }
+  if (inputImg.files.length === 0) {
+    mostrarToast("❌ Por favor, selecciona una imagen", "#e53e3e");
+    return;
+  }
 
-    const formData = new FormData();
-    formData.append('id', id);
-    formData.append('imagen', inputImg.files[0]);
-    formData.append('quitarFondo', quitarFondo);
+  const formData = new FormData();
+  formData.append("id", id);
+  formData.append("imagen", inputImg.files[0]);
+  formData.append("quitarFondo", quitarFondo);
 
-    this.disabled = true;
-    this.innerText = "Subiendo...";
+  this.disabled = true;
+  this.innerText = "Subiendo...";
 
-    fetch('productosKiosquero/cambiar-imagen', {
-        method: 'POST',
-        body: formData
-    })
-        .then(res => {
-            if (!res.ok) {
-                return res.json().then(err => { throw new Error(err.mensaje || "Error al subir la imagen"); });
-            }
-            return res.json();
-        })
-        .then(data => {
-            if (data.exito) {
-                const previewImg = document.getElementById('img-preview-' + id);
-                if (previewImg) {
-                    previewImg.src = data.nuevaUrl;
-                }
-                modalImagenInstancia.hide();
-                mostrarToast("✔️ Imagen actualizada", "#2f855a");
-            } else {
-                mostrarToast("❌ " + data.mensaje, "#e53e3e");
-            }
-        })
-        .catch(error => {
-            mostrarToast("❌ " + error.message, "#e53e3e");
-        })
-        .finally(() => {
-            this.disabled = false;
-            this.innerText = "Subir";
+  fetch("productosKiosquero/cambiar-imagen", {
+    method: "POST",
+    body: formData
+  })
+    .then(res => {
+      if (!res.ok) {
+        return res.json().then(err => {
+          throw new Error(err.mensaje || "Error al subir la imagen");
         });
+      }
+      return res.json();
+    })
+    .then(data => {
+      if (data.exito) {
+        const previewImg = document.getElementById("img-preview-" + id);
+        if (previewImg) {
+          previewImg.src = data.nuevaUrl;
+        }
+        modalImagenInstancia.hide();
+        mostrarToast("✔️ Imagen actualizada", "#2f855a");
+      } else {
+        mostrarToast("❌ " + data.mensaje, "#e53e3e");
+      }
+    })
+    .catch(error => {
+      mostrarToast("❌ " + error.message, "#e53e3e");
+    })
+    .finally(() => {
+      this.disabled = false;
+      this.innerText = "Subir";
+    });
 });
+
 /*
 // --- LÓGICA PARA ELIMINAR PRODUCTO (MODAL INTERACTIVO) ---
 let modalEliminarInstancia = null;
@@ -278,11 +283,11 @@ document.getElementById('btnConfirmarEliminarDefinitivo').addEventListener('clic
 */
 
 function mostrarToast(mensaje, color) {
-    const toast = document.getElementById('toast-guardado');
-    toast.style.backgroundColor = color;
-    toast.innerText = mensaje;
-    toast.style.display = 'flex';
-    setTimeout(() => {
-        toast.style.display = 'none';
-    }, 4000);
+  const toast = document.getElementById("toast-guardado");
+  toast.style.backgroundColor = color;
+  toast.innerText = mensaje;
+  toast.style.display = "flex";
+  setTimeout(() => {
+    toast.style.display = "none";
+  }, 4000);
 }
