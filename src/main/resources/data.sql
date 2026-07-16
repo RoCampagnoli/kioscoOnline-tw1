@@ -148,6 +148,7 @@ VALUES
     (null, 'Folios plásticos N°3', 'Pack de 10 folios plásticos transparentes',
     800.00, 3, 'https://res.cloudinary.com/dqrka5zry/image/upload/v1783999210/D_NQ_NP_694290-MLA102684397697_122025-O_vuof8a.webp', 10);
 
+UPDATE Producto SET cantidad = cantidad + 50;
 
 INSERT INTO Pedido(id,estado,fecha,subtotal,hijo_id,usuario_id,fecha_retiro)
 VALUES (1,'PAGO_PENDIENTE','2026-06-30 02:05:04.896000',600,1,1,'2026-07-16'),
@@ -158,3 +159,110 @@ INSERT INTO ItemPedido(id,cantidad,precioUnitario,pedido_id,producto_id)
 VALUES (1,1,600,1,1),
     (2,1,1200,2,2),
     (3,1,600,3,1);
+
+
+INSERT INTO Usuario (id, dni, nombre, apellido, celular, email, password, rol, activo, fotoPerfil)
+VALUES
+    (3, 20333444, 'Carlos', 'Gómez', 1133334444, 'test1@unlam.edu.ar', '$2a$10$2ll9SsWXF8a0HWPdz3iKKuBQ9S37sQxnfCFlghyUp7jKJFzlKhazy', 'CLIENTE', true, null),
+    (4, 20444555, 'Laura', 'Rodríguez', 1144445555, 'test2@unlam.edu.ar', '$2a$10$2ll9SsWXF8a0HWPdz3iKKuBQ9S37sQxnfCFlghyUp7jKJFzlKhazy', 'CLIENTE', true, null),
+    (5, 20555666, 'Mariano', 'López', 1155556666, 'test3@unlam.edu.ar', '$2a$10$2ll9SsWXF8a0HWPdz3iKKuBQ9S37sQxnfCFlghyUp7jKJFzlKhazy', 'CLIENTE', true, null),
+    (6, 20666777, 'Patricia', 'Fernández', 1166667777, 'test4@unlam.edu.ar', '$2a$10$2ll9SsWXF8a0HWPdz3iKKuBQ9S37sQxnfCFlghyUp7jKJFzlKhazy', 'CLIENTE', true, null);
+
+INSERT INTO Hijo (id, curso, fechaNac, fotoPerfil, nombre, idPadre, dni, apellido, aliasRetiro)
+VALUES
+    (4, 'SEGUNDO_A', '2019-03-12', null, 'Mateo', 3, 50111222, 'Gómez', 'SOL.LUNA.ESTRELLA'),
+    (5, 'TERCERO_B', '2018-08-24', null, 'Juana', 4, 50222333, 'Rodríguez', 'NUBE.TRUENO.VIENTO'),
+    (6, 'CUARTO_A', '2017-05-05', null, 'Lucas', 5, 50333444, 'López', 'FUEGO.TIERRA.AGUA'),
+    (7, 'QUINTO_B', '2016-11-30', null, 'Sofía', 6, 50444555, 'Fernández', 'LAPIZ.GOMA.REGLA');
+
+-- ==========================================
+-- PEDIDOS PARA "HOY" (16 de Julio de 2026)
+-- ==========================================
+
+-- Pedido para hoy: PAGADO (Usuario 3, Hijo 4) - Subtotal: 3300.00
+INSERT INTO Pedido(id, estado, fecha, subtotal, hijo_id, usuario_id, fecha_retiro)
+VALUES (4, 'PAGADO', '2026-07-16 08:30:00', 3300.00, 4, 3, '2026-07-16');
+
+INSERT INTO ItemPedido(id, cantidad, precioUnitario, pedido_id, producto_id)
+VALUES
+    (4, 1, 1500.00, 4, 11),  -- Coca Cola 500ml (ID: 11)
+    (5, 1, 1800.00, 4, 7);   -- Sándwich de Miga (ID: 7)
+
+
+-- Pedido para hoy: PAGO_PENDIENTE (Usuario 4, Hijo 5) - Subtotal: 2500.00
+INSERT INTO Pedido(id, estado, fecha, subtotal, hijo_id, usuario_id, fecha_retiro)
+VALUES (5, 'PAGO_PENDIENTE', '2026-07-16 09:15:00', 2500.00, 5, 4, '2026-07-16');
+
+INSERT INTO ItemPedido(id, cantidad, precioUnitario, pedido_id, producto_id)
+VALUES
+    (6, 1, 2500.00, 5, 6);   -- Pebete de Jamón y Queso (ID: 6)
+
+
+-- Pedido para hoy: PEDIDO_ARMADO (Usuario 5, Hijo 6) - Subtotal: 2000.00
+INSERT INTO Pedido(id, estado, fecha, subtotal, hijo_id, usuario_id, fecha_retiro)
+VALUES (6, 'PEDIDO_ARMADO', '2026-07-16 10:00:00', 2000.00, 6, 5, '2026-07-16');
+
+INSERT INTO ItemPedido(id, cantidad, precioUnitario, pedido_id, producto_id)
+VALUES
+    (7, 1, 2000.00, 6, 12);  -- Pizzeta de Muzzarella (ID: 12)
+
+
+-- ==========================================
+-- HISTORIAL DE PEDIDOS (Otros días hábiles de Julio 2026)
+-- ==========================================
+
+-- Miércoles 1 de Julio: PAGADO (Usuario 3)
+INSERT INTO Pedido(id, estado, fecha, subtotal, hijo_id, usuario_id, fecha_retiro)
+VALUES (7, 'PAGADO', '2026-07-01 12:30:00', 1400.00, 4, 3, '2026-07-01');
+INSERT INTO ItemPedido(id, cantidad, precioUnitario, pedido_id, producto_id)
+VALUES (8, 1, 1400.00, 7, 14); -- Pepsi 500ml
+
+-- Viernes 3 de Julio: PAGADO (Usuario 4)
+INSERT INTO Pedido(id, estado, fecha, subtotal, hijo_id, usuario_id, fecha_retiro)
+VALUES (8, 'PAGADO', '2026-07-03 10:10:00', 1200.00, 5, 4, '2026-07-03');
+INSERT INTO ItemPedido(id, cantidad, precioUnitario, pedido_id, producto_id)
+VALUES (9, 1, 1200.00, 8, 2); -- Alfajor Jorgito
+
+-- Lunes 6 de Julio: PAGADO (Usuario 5)
+INSERT INTO Pedido(id, estado, fecha, subtotal, hijo_id, usuario_id, fecha_retiro)
+VALUES (9, 'PAGADO', '2026-07-06 14:20:00', 1500.00, 6, 5, '2026-07-06');
+INSERT INTO ItemPedido(id, cantidad, precioUnitario, pedido_id, producto_id)
+VALUES (10, 1, 1500.00, 9, 11); -- Coca Cola
+
+-- Martes 7 de Julio: PAGADO (Usuario 6)
+INSERT INTO Pedido(id, estado, fecha, subtotal, hijo_id, usuario_id, fecha_retiro)
+VALUES (10, 'PAGADO', '2026-07-07 09:05:00', 2500.00, 7, 6, '2026-07-07');
+INSERT INTO ItemPedido(id, cantidad, precioUnitario, pedido_id, producto_id)
+VALUES (11, 1, 2500.00, 10, 18); -- Lapicera Borrable Simball
+
+-- Miércoles 8 de Julio: PAGADO (Usuario 3)
+INSERT INTO Pedido(id, estado, fecha, subtotal, hijo_id, usuario_id, fecha_retiro)
+VALUES (11, 'PAGADO', '2026-07-08 11:40:00', 1800.00, 4, 3, '2026-07-08');
+INSERT INTO ItemPedido(id, cantidad, precioUnitario, pedido_id, producto_id)
+VALUES (12, 1, 1800.00, 11, 19); -- Tijera Escolar Maped
+
+-- [Se salta el Jueves 9 de Julio por ser Feriado de la Independencia]
+
+-- Viernes 10 de Julio: PAGADO (Usuario 4)
+INSERT INTO Pedido(id, estado, fecha, subtotal, hijo_id, usuario_id, fecha_retiro)
+VALUES (12, 'PAGADO', '2026-07-10 08:50:00', 800.00, 5, 4, '2026-07-10');
+INSERT INTO ItemPedido(id, cantidad, precioUnitario, pedido_id, producto_id)
+VALUES (13, 1, 800.00, 12, 4); -- Jugo Baggio
+
+-- Lunes 13 de Julio: PAGADO (Usuario 5)
+INSERT INTO Pedido(id, estado, fecha, subtotal, hijo_id, usuario_id, fecha_retiro)
+VALUES (13, 'PAGADO', '2026-07-13 15:00:00', 1200.00, 6, 5, '2026-07-13');
+INSERT INTO ItemPedido(id, cantidad, precioUnitario, pedido_id, producto_id)
+VALUES (14, 1, 1200.00, 13, 10); -- Empanada de J&Q
+
+-- Martes 14 de Julio: PAGADO (Usuario 6)
+INSERT INTO Pedido(id, estado, fecha, subtotal, hijo_id, usuario_id, fecha_retiro)
+VALUES (14, 'PAGADO', '2026-07-14 10:30:00', 1200.00, 7, 6, '2026-07-14');
+INSERT INTO ItemPedido(id, cantidad, precioUnitario, pedido_id, producto_id)
+VALUES (15, 1, 1200.00, 14, 14); -- Alcohol en Gel pocket
+
+-- Miércoles 15 de Julio: PAGADO (Usuario 3)
+INSERT INTO Pedido(id, estado, fecha, subtotal, hijo_id, usuario_id, fecha_retiro)
+VALUES (15, 'PAGADO', '2026-07-15 11:15:00', 2000.00, 4, 3, '2026-07-15');
+INSERT INTO ItemPedido(id, cantidad, precioUnitario, pedido_id, producto_id)
+VALUES (16, 1, 2000.00, 15, 12); -- Pizzeta

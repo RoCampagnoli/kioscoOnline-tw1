@@ -450,20 +450,35 @@
 }
 
 @media (max-width: 600px) {
+    .modal-overlay {
+        display: none; /* Sigue oculto por defecto */
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, .45);
+        z-index: 200;
+        padding: 1rem;
+        /* Forzamos que cuando se muestre use flex para centrar absolutamente todo */
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+    }
+
+    /* Aseguramos que al estar visible se active el centrado Flexbox */
+    .modal-overlay.visible,
+    .modal-overlay[style*="display: block"],
+    .modal-overlay[style*="display: block-flex"] {
+        display: flex !important;
+    }
+
     .modal-card {
-        width: 92vw;
+        width: 100%;
         max-width: 92vw;
-        padding: 1.25rem;
+        padding: 1.5rem 1.25rem;
         border-radius: 16px;
         max-height: 85vh;
         overflow-y: auto;
-        margin: 0 auto;
-    }
-
-    .modal-overlay {
-        padding: 1rem;
-        align-items: center;
-        justify-content: center;
+        margin: auto; /* Centrado automático en Flexbox */
+        box-sizing: border-box;
     }
 
     .form-grid {
@@ -475,3 +490,4 @@
         align-items: flex-start;
     }
 }
+
