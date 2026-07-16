@@ -125,4 +125,75 @@ public class ServicioImagenesTest {
       () -> servicioImagenes.subirImagen(archivoMock, "carpeta")
     );
   }
+
+  @Test
+  public void subirImagenProductoSinQuitarFondoNoDeberiaAplicarTransformacion() throws IOException {
+    byte[] contenidoFalso = "imagen-producto".getBytes();
+    when(archivoMock.getBytes()).thenReturn(contenidoFalso);
+
+    Map<String, Object> resultadoSimulado = new HashMap<>();
+    resultadoSimulado.put(
+      "secure_url",
+      "https://res.cloudinary.com/kionet/image/upload/producto.jpg"
+    );
+    when(uploaderMock.upload(eq(contenidoFalso), any(Map.class))).thenReturn(resultadoSimulado);
+
+    ArgumentCaptor<Map<String, Object>> capturadorDeMapa = ArgumentCaptor.forClass(Map.class);
+
+    String urlObtenida = servicioImagenes.subirImagenProducto(archivoMock, "productos", false);
+
+    assertThat(urlObtenida, equalTo("https://res.cloudinary.com/kionet/image/upload/producto.jpg"));
+    verify(uploaderMock, times(1)).upload(eq(contenidoFalso), capturadorDeMapa.capture());
+
+    Map<String, Object> mapaEjecutado = capturadorDeMapa.getValue();
+    assertThat(mapaEjecutado.get("folder"), equalTo("productos"));
+    assertThat(mapaEjecutado.containsKey("transformation"), equalTo(false));
+  }
+
+  @Test
+  public void subirImagenProductoQuitandoFondoDeberiaAplicarLaTransformacionDeBackgroundRemoval()
+    throws IOException {
+    byte[] contenidoFalso = "imagen-producto-sin-fondo".getBytes();
+    when(archivoMock.getBytes()).thenReturn(contenidoFalso);
+
+    Map<String, Object> resultadoSimulado = new HashMap<>();
+    resultadoSimulado.put(
+      "secure_url",
+      "https://res.cloudinary.com/kionet/image/upload/producto_sin_fondo.png"
+    );
+    when(uploaderMock.upload(eq(contenidoFalso), any(Map.class))).thenReturn(resultadoSimulado);
+
+    ArgumentCaptor<Map<String, Object>> capturadorDeMapa = ArgumentCaptor.forClass(Map.class);
+
+    String urlObtenida = servicioImagenes.subirImagenProducto(archivoMock, "productos", true);
+
+    assertThat(
+      urlObtenida,
+      equalTo("https://res.cloudinary.com/kionet/image/upload/producto_sin_fondo.png")
+    );
+    verify(uploaderMock, times(1)).upload(eq(contenidoFalso), capturadorDeMapa.capture());
+
+    Map<String, Object> mapaEjecutado = capturadorDeMapa.getValue();
+    assertThat(mapaEjecutado.get("folder"), equalTo("productos"));
+    assertThat(mapaEjecutado.containsKey("transformation"), equalTo(true));
+
+    String transformacionString = mapaEjecutado.get("transformation").toString();
+    assertThat(
+      transformacionString.contains("background_removal") ||
+      transformacionString.contains("e_background_removal"),
+      equalTo(true)
+    );
+  }
+
+  @Test
+  public void siCloudinaryFallaAlSubirImagenDeProductoDeberiaLanzarRuntimeException()
+    throws IOException {
+    when(archivoMock.getBytes()).thenReturn("datos".getBytes());
+    doThrow(IOException.class).when(uploaderMock).upload(any(byte[].class), any(Map.class));
+
+    assertThrows(
+      RuntimeException.class,
+      () -> servicioImagenes.subirImagenProducto(archivoMock, "productos", true)
+    );
+  }
 }

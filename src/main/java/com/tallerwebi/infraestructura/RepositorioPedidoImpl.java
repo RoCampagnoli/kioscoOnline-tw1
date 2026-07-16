@@ -189,7 +189,10 @@ public class RepositorioPedidoImpl implements RepositorioPedido {
     return sessionFactory
       .getCurrentSession()
       .createQuery(
-        "SELECT p FROM Pedido p " + JOIN_ITEMS + JOIN_PRODUCTO + "WHERE p.id= :idPedido",
+        "SELECT p FROM Pedido p LEFT JOIN FETCH p.hijo " +
+        JOIN_ITEMS +
+        JOIN_PRODUCTO +
+        "WHERE p.id= :idPedido",
         Pedido.class
       )
       .setParameter("idPedido", idPedido)

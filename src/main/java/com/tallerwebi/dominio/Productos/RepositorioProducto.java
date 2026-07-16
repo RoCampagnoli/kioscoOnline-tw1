@@ -12,4 +12,10 @@ public interface RepositorioProducto {
   List<Producto> buscarProductos(String texto);
 
   Producto buscarProductoPorId(long id);
+
+  CategoriaProductos buscarCategoriaPorId(Long id);
+
+  void guardar(Producto producto);
+
+  void eliminar(Producto producto);
 }

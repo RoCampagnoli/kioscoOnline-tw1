@@ -55,4 +55,19 @@ public class RepositorioProductoImpl implements RepositorioProducto {
   public Producto buscarProductoPorId(long id) {
     return this.sessionFactory.getCurrentSession().get(Producto.class, id);
   }
+
+  @Override
+  public CategoriaProductos buscarCategoriaPorId(Long id) {
+    return this.sessionFactory.getCurrentSession().get(CategoriaProductos.class, id);
+  }
+
+  @Override
+  public void guardar(Producto producto) {
+    this.sessionFactory.getCurrentSession().saveOrUpdate(producto);
+  }
+
+  @Override
+  public void eliminar(Producto producto) {
+    this.sessionFactory.getCurrentSession().delete(producto);
+  }
 }

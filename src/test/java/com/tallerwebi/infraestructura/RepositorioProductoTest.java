@@ -1,9 +1,7 @@
 package com.tallerwebi.infraestructura;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 
 import com.tallerwebi.dominio.Productos.CategoriaProductos;
 import com.tallerwebi.dominio.Productos.Producto;
@@ -107,6 +105,75 @@ public class RepositorioProductoTest {
 
     List<Producto> productoBuscado = repositorioProducto.buscarProductos(busqueda);
     assertThat(productoBuscado, is(empty()));
+  }
+
+  @Test
+  @Transactional
+  @Rollback
+  public void deberiaEncontrarUnaCategoriaPorSuId() {
+    CategoriaProductos categoria = this.dadoQueTengoUnaCategoria();
+
+    CategoriaProductos categoriaEncontrada = repositorioProducto.buscarCategoriaPorId(
+      categoria.getId()
+    );
+
+    assertThat(categoriaEncontrada.getNombreCategoria(), equalTo("categoria"));
+  }
+
+  @Test
+  @Transactional
+  @Rollback
+  public void deberiaRetornarNullSiLaCategoriaBuscadaPorIdNoExiste() {
+    CategoriaProductos categoriaEncontrada = repositorioProducto.buscarCategoriaPorId(999L);
+
+    assertThat(categoriaEncontrada, is(nullValue()));
+  }
+
+  @Test
+  @Transactional
+  @Rollback
+  public void deberiaGuardarUnProductoNuevo() {
+    Producto producto = this.dadoQueTengoUnProducto();
+
+    repositorioProducto.guardar(producto);
+    this.sessionFactory.getCurrentSession().flush();
+
+    List<Producto> listaProductos = repositorioProducto.listarProductos();
+    assertThat(listaProductos, hasSize(1));
+    assertThat(listaProductos.get(0).getNombre(), equalTo("Producto1"));
+  }
+
+  @Test
+  @Transactional
+  @Rollback
+  public void deberiaActualizarUnProductoExistenteAlGuardarlo() {
+    Producto producto = this.dadoQueTengoUnProducto();
+    this.sessionFactory.getCurrentSession().save(producto);
+    this.sessionFactory.getCurrentSession().flush();
+
+    producto.setNombre("Producto1Editado");
+    producto.setPrecio(250.0);
+    repositorioProducto.guardar(producto);
+    this.sessionFactory.getCurrentSession().flush();
+
+    Producto productoActualizado = repositorioProducto.buscarProductoPorId(producto.getId());
+    assertThat(productoActualizado.getNombre(), equalTo("Producto1Editado"));
+    assertThat(productoActualizado.getPrecio(), equalTo(250.0));
+  }
+
+  @Test
+  @Transactional
+  @Rollback
+  public void deberiaEliminarUnProducto() {
+    Producto producto = this.dadoQueTengoUnProducto();
+    this.sessionFactory.getCurrentSession().save(producto);
+    this.sessionFactory.getCurrentSession().flush();
+
+    repositorioProducto.eliminar(producto);
+    this.sessionFactory.getCurrentSession().flush();
+
+    List<Producto> listaProductos = repositorioProducto.listarProductos();
+    assertThat(listaProductos, is(empty()));
   }
 
   //--------------METODOS AUXILIARES DE LOS TEST----------------

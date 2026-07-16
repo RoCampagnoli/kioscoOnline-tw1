@@ -1,0 +1,564 @@
+   @import "variablesColor.css";
+
+   .pedidos-grid-kiosquero {
+       display: grid;
+       grid-template-columns: repeat(2, 1fr);
+       gap: 1.5rem;
+       align-items: start;
+       width: 100%;
+   }
+   .main--kiosquero-productos {
+       grid-template-columns: 260px minmax(0, 1fr);
+   }
+
+   .main--kiosquero-productos .panel-tienda {
+       min-width: 0;
+   }
+    /* Estilos específicos de la planilla Excel / Tabla de Productos */
+.tabla-excel-container {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    padding: 5px;
+    overflow-x: auto;
+    border: 1px solid #eef0f5;
+}
+
+.tabla-excel {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    text-align: left;
+}
+
+.tabla-excel th {
+    background-color: #f8f9fa;
+    color: #4a5568;
+    font-weight: 600;
+    padding: 12px 16px;
+    border-bottom: 2px solid #edf2f7;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+}
+
+.tabla-excel tbody tr {
+    border-bottom: 1px solid #edf2f7;
+    transition: background-color 0.2s;
+}
+
+.tabla-excel tbody tr:hover {
+    background-color: #f7fafc;
+}
+
+/* Celda Editable */
+.celda-editable {
+    cursor: pointer;
+    position: relative;
+    padding: 12px 16px;
+    transition: all 0.2s;
+}
+
+.celda-editable:hover {
+    background-color: #f0f4ff;
+    outline: 1px dashed var(--purple);
+}
+
+.celda-editable::after {
+    content: "✏️";
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 10px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.celda-editable:hover::after {
+    opacity: 0.5;
+}
+
+/* Inputs dinámicos dentro de la tabla */
+.input-edicion-tabla {
+    width: 100%;
+    padding: 6px 10px;
+    border: 2px solid var(--purple) !important;
+    border-radius: 4px;
+    outline: none;
+    font-size: 14px;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.select-edicion-tabla {
+    width: 100%;
+    padding: 6px 10px;
+    border: 2px solid var(--purple);
+    border-radius: 4px;
+    outline: none;
+    font-size: 14px;
+    background-color: white;
+}
+
+.badge-categoria {
+    background-color: #f3f0ff;
+    color: var(--purple);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+/* Notificación flotante de guardado */
+#toast-guardado {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #2d3748;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: none;
+    z-index: 9999;
+    align-items: center;
+    gap: 10px;
+}
+
+   /* ==========================================================================
+    Solución para imágenes gigantes y botón de cambio de imagen en la tabla
+    ========================================================================== */
+
+   /* 1. Controlamos el tamaño del contenedor redondo/cuadrado de la imagen */
+   .img-miniatura-wrapper {
+       width: 65px;
+       height: 65px;
+       position: relative;
+       border-radius: 8px; /* Bordes suaves */
+       overflow: hidden;   /* Oculta lo que se salga del recuadro */
+       border: 1px solid #edf2f7;
+       background-color: #f7fafc;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+       transition: transform 0.2s ease-in-out;
+   }
+
+   /* Zoom sutil al pasar el mouse por encima */
+   .img-miniatura-wrapper:hover {
+       transform: scale(1.05);
+   }
+
+   /* 2. Hacemos que la imagen se adapte perfectamente sin estirarse */
+   .img-miniatura-wrapper img {
+       width: 100% !important;
+       height: 100% !important;
+       object-fit: cover; /* Centra y recorta la imagen proporcionalmente */
+   }
+
+   /* 3. Estilo compacto y limpio para el botón "Cambiar" debajo de la imagen */
+   .btn-cambiar-imagen {
+       position: absolute;
+       bottom: 0;
+       left: 0;
+       width: 100%;
+       background: rgba(91, 63, 228, 0.85); /* Fondo violeta semi-transparente */
+       color: #ffffff;
+       border: none;
+       font-size: 10px;
+       font-weight: 700;
+       padding: 3px 0;
+       text-align: center;
+       cursor: pointer;
+       text-transform: uppercase;
+       transition: background 0.2s ease, opacity 0.2s ease;
+       opacity: 0; /* Oculto por defecto para que no moleste visualmente */
+   }
+
+   /* El botón aparece elegantemente solo cuando pasas el mouse por encima de la celda */
+   .img-miniatura-wrapper:hover .btn-cambiar-imagen {
+       opacity: 1;
+   }
+   /* ==========================================================================
+   Estilos migrados desde atributos inline (HTML)
+   ========================================================================== */
+
+   /* Botones y chips */
+   .btn-agregar-producto {
+       background-color: var(--purple, #5b3fe4);
+       color: white;
+       border: none;
+       padding: 12px 24px;
+       font-weight: 600;
+       border-radius: 8px;
+       transition: opacity 0.2s;
+   }
+
+   .btn-agregar-producto:hover {
+       opacity: 0.9;
+   }
+
+   .boton-sin-borde {
+       border: none;
+   }
+
+   .chip-limpiar {
+       background: #e0e0e0;
+       color: black;
+       display: flex;
+       align-items: center;
+       text-decoration: none;
+   }
+
+   /* Alertas */
+   .m-alerta {
+       margin: 15px 0;
+   }
+
+   /* Buscador y Contenedores */
+   .contenedor-busqueda {
+       margin-top: 0.5rem;
+       margin-bottom: 0.5rem;
+   }
+
+   .form-busqueda {
+       display: flex;
+       align-items: center;
+       gap: 10px;
+       width: 100%;
+       max-width: 500px;
+   }
+
+   .form-busqueda .search-wrapper {
+       flex: 1;
+   }
+
+   /* Sección de Categorías */
+   .contenedor-categorias {
+       margin-top: 0.5rem;
+       margin-bottom: 0.5rem;
+   }
+
+   .titulo-filtro-categoria {
+       display: flex;
+       align-items: center;
+       gap: 1rem;
+       margin-bottom: 10px;
+   }
+
+   .texto-filtro {
+       font-size: 1.1rem;
+       font-weight: 700;
+       color: var(--text, #2d3748);
+       margin: 0;
+       white-space: nowrap;
+   }
+
+   .linea-separadora {
+       flex: 1;
+       border: none;
+       border-top: 1.5px solid var(--border, #edf2f7);
+       margin: 0;
+       opacity: 0.8;
+   }
+
+   /* Configuración de Columnas de la Tabla */
+   .col-imagen {
+       width: 70px;
+       text-align: center;
+   }
+
+   .col-id {
+       width: 70px;
+   }
+
+   .col-categoria {
+       width: 150px;
+   }
+
+   .col-precio {
+       width: 120px;
+       text-align: right;
+   }
+
+   .col-stock {
+       width: 100px;
+       text-align: right;
+   }
+
+   /* Celdas de la Tabla */
+   .celda-imagen {
+       vertical-align: middle;
+       text-align: center;
+   }
+
+   .celda-id {
+       font-weight: bold;
+       color: #718096;
+       vertical-align: middle;
+   }
+
+   .celda-alineada {
+       vertical-align: middle;
+   }
+
+   .celda-precio,
+   .celda-stock {
+       font-weight: 600;
+       color: #2d3748;
+       vertical-align: middle;
+   }
+
+   /* Modales */
+   .modal-personalizado-borde {
+       border-radius: 12px;
+       border: 2px solid var(--purple, #5b3fe4);
+   }
+
+   .modal-crear-producto {
+       border-radius: 12px;
+       border: 2px solid var(--purple, #5b3fe4);
+       padding: 10px;
+   }
+
+   .titulo-modal-purpura {
+       font-weight: 700;
+       color: var(--purple, #5b3fe4);
+   }
+
+   .header-sin-borde {
+       border-bottom: none;
+   }
+
+   .footer-sin-borde-compacto {
+       border-top: none;
+       gap: 5px;
+   }
+
+   .footer-crear-producto {
+       border-top: none;
+       gap: 10px;
+   }
+
+   .label-negrita {
+       font-weight: 600;
+   }
+
+   .etiqueta-conmutador {
+       font-weight: 500;
+   }
+
+   /* Acciones en Modales */
+   .btn-cancelar-modal {
+       background: #e0e0e0;
+       color: black;
+       border: none;
+       padding: 6px 12px;
+   }
+
+   .btn-accion-compacto {
+       padding: 6px 12px;
+   }
+
+   .btn-cancelar-modal-grande {
+       background: #e0e0e0;
+       color: #333;
+       border: none;
+       padding: 8px 16px;
+   }
+
+   .btn-guardar-producto {
+       padding: 8px 16px;
+   }
+
+   /* Botón de eliminar en tabla */
+   .btn-eliminar-tabla {
+       background: none;
+       border: none;
+       color: #e53e3e;
+       padding: 6px;
+       border-radius: 6px;
+       cursor: pointer;
+       display: inline-flex;
+       align-items: center;
+       justify-content: center;
+       transition: all 0.2s ease-in-out;
+   }
+
+   .btn-eliminar-tabla:hover {
+       background-color: #fff5f5;
+       color: #c53030;
+       transform: scale(1.1);
+   }
+
+   .col-acciones {
+       width: 80px;
+   }
+
+   .titulo-con-linea {
+       display: flex;
+       align-items: center;
+       gap: 1rem;
+       margin-bottom: 1.5rem;
+   }
+
+   .titulo-con-linea .subtitulos {
+       margin-bottom: 0;
+       white-space: nowrap;
+   }
+
+   .titulo-con-linea .linea-titulo {
+       flex: 1;
+       border: none;
+       border-top: 1.5px solid var(--border);
+       margin: 0;
+       opacity: 0.8;
+   }
+   .titulo-con-linea form {
+       flex-shrink: 0;
+   }
+
+   .titulo-con-linea select {
+       cursor: pointer;
+   }
+   /* ==========================================================================
+   Responsive / Adaptabilidad a pantallas móviles y tablets
+   ========================================================================== */
+
+   @media (max-width: 1050px) {
+       .pedidos-grid-kiosquero {
+           grid-template-columns: 1fr;
+       }
+       /* La sección de la planilla se ensancha para ocupar la pantalla */
+       .panel-tienda {
+           padding: 15px !important;
+           width: 100% !important;
+           box-sizing: border-box;
+       }
+
+       .btn-agregar-producto {
+       width: auto;
+       background-color: white !important;
+       color: var(--purple, #5b3fe4) !important;
+       border: 1px solid white !important;
+       padding: 10px 24px;
+       font-weight: 700;
+       border-radius: 10px;
+       transition: transform 0.2s;
+   }
+
+       .btn-agregar-producto:hover {
+           transform: translateY(-2px);
+       }
+       /* NUEVO: activar el drawer del panel izquierdo antes que en el resto del sitio */
+       .btn-hamburguesa {
+           display: flex;
+       }
+
+       .main {
+           grid-template-columns: 1fr;
+       }
+
+       .panel-cliente {
+           position: fixed;
+           top: 0;
+           left: -100%;
+           width: 280px;
+           height: 100vh;
+           z-index: 100;
+           border-radius: 0;
+           transition: left 0.3s ease;
+           overflow-y: auto;
+       }
+
+       .panel-cliente.drawer-open {
+           left: 0;
+       }
+
+       .btn-cerrar-drawer {
+           display: flex;
+       }
+   }
+
+   @media (max-width: 768px) {
+       /* Ajustes para el contenedor de búsqueda */
+       .form-busqueda {
+           flex-direction: row;
+           max-width: 100% !important;
+           gap: 8px;
+           align-items: center;
+       }
+
+       .form-busqueda .search-wrapper {
+           flex: 1;
+           min-width: 0;
+       }
+
+       .form-busqueda a.chip-limpiar {
+           flex-shrink: 0;
+           text-align: center;
+       }
+
+       /* Forzar que los chips de categoría se acomoden en filas de rejilla flexible (wrap) */
+       .categories-nav {
+           display: flex !important;
+           flex-wrap: wrap !important; /* Desactiva el scroll horizontal */
+           justify-content: center;
+           gap: 8px;
+           overflow-x: visible !important;
+       }
+
+       .category-chip {
+           white-space: normal;
+           flex-shrink: 1;
+           font-size: 0.85rem;
+           padding: 0.5rem 1rem;
+       }
+       .titulo-con-linea {
+           flex-wrap: wrap;
+       }
+
+       .titulo-con-linea .linea-titulo {
+           display: none; /* en mobile ocultamos la línea para dejar lugar al select sin amontonar */
+       }
+
+       .titulo-con-linea form {
+           width: 100%;
+       }
+
+       .titulo-con-linea select {
+           width: 100%;
+       }
+
+       /* ── TABLA COMPACTA: PREVENCIÓN DE DESBORDE ── */
+       .tabla-excel th:nth-child(2),
+       .tabla-excel td:nth-child(2) {
+           display: none !important;
+       }
+       /* Ocultamos la columna 4 (Descripción) para ahorrar un 40% de espacio horizontal */
+       .tabla-excel th:nth-child(4),
+       .tabla-excel td:nth-child(4) {
+           display: none !important;
+       }
+
+       .tabla-excel-container {
+           padding: 8px;
+           border-radius: 10px;
+           overflow-x: auto; /* Permite scroll exclusivamente dentro de la tabla si el dispositivo es muy angosto */
+       }
+
+       .tabla-excel th,
+       .tabla-excel td {
+           padding: 10px 8px;
+           font-size: 12px;
+       }
+
+       /* Reducimos sutilmente la miniatura para evitar ensanchar la fila */
+       .img-miniatura-wrapper {
+           width: 48px;
+           height: 48px;
+       }
+   }

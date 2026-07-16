@@ -22,6 +22,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 public class KiosqHomeControlador {
 
+  private static final String RETIRO_TODOS = "TODOS";
+  private static final String RETIRO_HOY = "HOY";
+  private static final String RETIRO_MANIANA = "MANIANA";
+  private static final String RETIRO_SEMANA = "SEMANA";
+
   private final ServicioPedido servicioPedido;
 
   @Autowired
@@ -33,7 +38,8 @@ public class KiosqHomeControlador {
   public ModelAndView irAlHomeKiosquero(
     HttpSession session,
     @RequestParam(value = "estado", required = false) String estadoPedido,
-    @RequestParam(value = "busqueda", required = false) String busqueda
+    @RequestParam(value = "busqueda", required = false) String busqueda,
+    @RequestParam(value = "retiro", required = false) String retiroFiltro
   ) {
     Usuario usuario = (Usuario) session.getAttribute("USUARIO");
     String rol = (String) session.getAttribute("ROL");
@@ -53,7 +59,9 @@ public class KiosqHomeControlador {
     modelo.put("estados", estadosVisiblesParaKiosquero);
     modelo.put("estadoActual", estadoPedido);
 
-    this.cargarPedidosDeLosUsuariosCLientes(modelo, estadoPedido);
+    String retiroParaUsar = (retiroFiltro == null) ? RETIRO_HOY : retiroFiltro;
+    modelo.put("retiroActual", retiroParaUsar);
+    this.cargarPedidosDeLosUsuariosCLientes(modelo, estadoPedido, retiroParaUsar);
     this.cargarResultadoBusquedaPedido(modelo, busqueda);
 
     return new ModelAndView("homeKiosquero", modelo);
@@ -93,18 +101,52 @@ public class KiosqHomeControlador {
     return new ModelAndView("redirect:/homeKiosquero");
   }
 
-  private void cargarPedidosDeLosUsuariosCLientes(ModelMap modelo, String estadoPedido) {
+  private void cargarPedidosDeLosUsuariosCLientes(
+    ModelMap modelo,
+    String estadoPedido,
+    String retiroFiltro
+  ) {
     try {
       List<Pedido> pedidosClientes;
-      if (estadoPedido != null && !estadoPedido.isEmpty() && !"TODOS".equals(estadoPedido)) {
+      if (estadoPedido != null && !estadoPedido.isEmpty() && !RETIRO_TODOS.equals(estadoPedido)) {
         pedidosClientes = this.servicioPedido.obtenerPedidosDeLosUsuariosFiltrado(estadoPedido);
       } else {
         pedidosClientes = this.servicioPedido.obtenerPedidosDeLosUsuarios();
       }
-      modelo.put("pedidosClientes", pedidosClientes);
+
+      List<Pedido> pedidosFiltradosPorRetiro =
+        this.filtrarPedidosPorFechaRetiro(pedidosClientes, retiroFiltro);
+
+      modelo.put("pedidosClientes", pedidosFiltradosPorRetiro);
     } catch (PedidoNoEncontradoException e) {
       modelo.put("errorBusquedaPedido", e.getMessage());
     }
+  }
+
+  private List<Pedido> filtrarPedidosPorFechaRetiro(List<Pedido> pedidos, String retiroFiltro) {
+    if (retiroFiltro == null || RETIRO_TODOS.equals(retiroFiltro)) {
+      return pedidos;
+    }
+
+    return pedidos
+      .stream()
+      .filter(p -> p.getFechaRetiro() != null)
+      .filter(p -> this.coincideConFiltroDeRetiro(p.getFechaRetiro(), retiroFiltro))
+      .collect(java.util.stream.Collectors.toList());
+  }
+
+  private boolean coincideConFiltroDeRetiro(java.time.LocalDate fechaRetiro, String retiroFiltro) {
+    java.time.LocalDate hoy = java.time.LocalDate.now();
+
+    java.util.Map<String, Boolean> resultadosPorFiltro = new java.util.HashMap<>();
+    resultadosPorFiltro.put(RETIRO_HOY, fechaRetiro.isEqual(hoy));
+    resultadosPorFiltro.put(RETIRO_MANIANA, fechaRetiro.isEqual(hoy.plusDays(1)));
+    resultadosPorFiltro.put(
+      RETIRO_SEMANA,
+      !fechaRetiro.isBefore(hoy) && !fechaRetiro.isAfter(hoy.plusDays(7))
+    );
+
+    return resultadosPorFiltro.getOrDefault(retiroFiltro, true);
   }
 
   private void cargarResultadoBusquedaPedido(ModelMap modelo, String busqueda) {

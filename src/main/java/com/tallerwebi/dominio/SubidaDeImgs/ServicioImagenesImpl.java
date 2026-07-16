@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class ServicioImagenesImpl implements ServicioImagenes {
 
   private final Cloudinary cloudinary;
+  private static final String FOLDER_LITERAL = "folder";
 
   @Autowired
   public ServicioImagenesImpl(Cloudinary cloudinary) {
@@ -24,7 +25,7 @@ public class ServicioImagenesImpl implements ServicioImagenes {
     try {
       Map<String, Object> resultado = (Map<String, Object>) cloudinary
         .uploader()
-        .upload(archivo.getBytes(), ObjectUtils.asMap("folder", carpeta));
+        .upload(archivo.getBytes(), ObjectUtils.asMap(FOLDER_LITERAL, carpeta));
 
       return resultado.get("secure_url").toString();
     } catch (IOException e) {
@@ -40,7 +41,7 @@ public class ServicioImagenesImpl implements ServicioImagenes {
         .upload(
           archivo.getBytes(),
           ObjectUtils.asMap(
-            "folder",
+            FOLDER_LITERAL,
             carpeta,
             "transformation",
             new Transformation<>()
@@ -54,6 +55,28 @@ public class ServicioImagenesImpl implements ServicioImagenes {
       return resultado.get("secure_url").toString();
     } catch (IOException e) {
       throw new RuntimeException("Error al subir imagen del hijo", e);
+    }
+  }
+
+  @Override
+  public String subirImagenProducto(MultipartFile archivo, String carpeta, boolean quitarFondo) {
+    try {
+      Map<String, Object> opciones = quitarFondo
+        ? ObjectUtils.asMap(
+          FOLDER_LITERAL,
+          carpeta,
+          "transformation",
+          new Transformation<>().effect("background_removal")
+        )
+        : ObjectUtils.asMap(FOLDER_LITERAL, carpeta);
+
+      Map<String, Object> resultado = (Map<String, Object>) cloudinary
+        .uploader()
+        .upload(archivo.getBytes(), opciones);
+
+      return resultado.get("secure_url").toString();
+    } catch (IOException e) {
+      throw new RuntimeException("Error al subir la imagen del producto", e);
     }
   }
 }

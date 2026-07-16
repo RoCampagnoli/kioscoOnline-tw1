@@ -1,4 +1,4 @@
-package com.tallerwebi.presentacion;
+package com.tallerwebi.presentacion.kiosquero;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -8,14 +8,12 @@ import com.tallerwebi.dominio.Hijos.Hijo;
 import com.tallerwebi.dominio.Pedidos.EstadoPedido;
 import com.tallerwebi.dominio.Pedidos.Pedido;
 import com.tallerwebi.dominio.Pedidos.ServicioPedido;
-import com.tallerwebi.dominio.Productos.Producto;
 import com.tallerwebi.dominio.Usuario.Usuario;
 import com.tallerwebi.dominio.excepcion.PedidoNoEncontradoException;
 import com.tallerwebi.presentacion.Kiosquero.KiosqHomeControlador;
 import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpSession;
-import org.hamcrest.Matchers;
 import org.hamcrest.text.IsEqualIgnoringCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,7 +48,7 @@ public class KiosqHomeControladorTest {
   public void siNoHayKiosqueroLogueadoDebeVolverAlLogin() {
     when(sessionMock.getAttribute("USUARIO")).thenReturn(null);
 
-    ModelAndView mav = kiosControlador.irAlHomeKiosquero(sessionMock, null, null);
+    ModelAndView mav = kiosControlador.irAlHomeKiosquero(sessionMock, null, null, null);
 
     assertThat(mav.getViewName(), equalToIgnoringCase("redirect:/login"));
   }
@@ -62,7 +60,7 @@ public class KiosqHomeControladorTest {
     when(sessionMock.getAttribute("ROL")).thenReturn("KIOSQUERO");
     when(usuarioMock.getNombre()).thenReturn("Rocio");
 
-    ModelAndView mav = kiosControlador.irAlHomeKiosquero(sessionMock, null, null);
+    ModelAndView mav = kiosControlador.irAlHomeKiosquero(sessionMock, null, null, "TODOS");
     assertThat(
       ((Usuario) mav.getModel().get("usuario")).getNombre(),
       IsEqualIgnoringCase.equalToIgnoringCase("Rocio")
@@ -78,7 +76,7 @@ public class KiosqHomeControladorTest {
 
     List<Pedido> pedidos = List.of(pedidoMock);
     when(servicioPedidoMock.obtenerPedidosDeLosUsuarios()).thenReturn(pedidos);
-    ModelAndView mav = kiosControlador.irAlHomeKiosquero(sessionMock, null, null);
+    ModelAndView mav = kiosControlador.irAlHomeKiosquero(sessionMock, null, null, "TODOS");
     List<Pedido> pedidosObtenidos = (List<Pedido>) mav.getModel().get("pedidosClientes");
 
     assertThat(pedidosObtenidos.get(0).getId(), equalTo(1L));
@@ -96,7 +94,7 @@ public class KiosqHomeControladorTest {
     List<Pedido> pedidos = List.of(pedidoMock);
     when(servicioPedidoMock.obtenerPedidosDeLosUsuariosFiltrado(estado)).thenReturn(pedidos);
 
-    ModelAndView mav = kiosControlador.irAlHomeKiosquero(sessionMock, estado, null);
+    ModelAndView mav = kiosControlador.irAlHomeKiosquero(sessionMock, estado, null, "TODOS");
     List<Pedido> pedidosObtenidos = (List<Pedido>) mav.getModel().get("pedidosClientes");
 
     assertThat(pedidosObtenidos.get(0).getId(), equalTo(1L));
@@ -125,7 +123,7 @@ public class KiosqHomeControladorTest {
     when(servicioPedidoMock.obtenerPedidosDeLosUsuarios()).thenReturn(listadoGeneralVacio);
     when(servicioPedidoMock.obtenerResultadosBusquedaPorNombre(nombreAlumno)).thenReturn(pedidos);
 
-    ModelAndView mav = kiosControlador.irAlHomeKiosquero(sessionMock, null, nombreAlumno);
+    ModelAndView mav = kiosControlador.irAlHomeKiosquero(sessionMock, null, nombreAlumno, "TODOS");
     List<Pedido> pedidosObtenidos = (List<Pedido>) mav.getModel().get("pedidosBuscados");
 
     assertThat(pedidosObtenidos, hasSize(2));
@@ -207,7 +205,7 @@ public class KiosqHomeControladorTest {
     // Simulamos que el servicio encuentra el pedido exacto por ID
     when(servicioPedidoMock.obtenerResultadosBusquedaPedidoPorId(123L)).thenReturn(pedidoMock);
 
-    ModelAndView mav = kiosControlador.irAlHomeKiosquero(sessionMock, null, busquedaPorId);
+    ModelAndView mav = kiosControlador.irAlHomeKiosquero(sessionMock, null, busquedaPorId, "TODOS");
     List<Pedido> pedidosObtenidos = (List<Pedido>) mav.getModel().get("pedidosBuscados");
 
     assertThat(pedidosObtenidos, hasSize(1));
@@ -224,7 +222,12 @@ public class KiosqHomeControladorTest {
     when(servicioPedidoMock.obtenerResultadosBusquedaPorNombre(busquedaFallida))
       .thenThrow(new PedidoNoEncontradoException("No se encontraron pedidos"));
 
-    ModelAndView mav = kiosControlador.irAlHomeKiosquero(sessionMock, null, busquedaFallida);
+    ModelAndView mav = kiosControlador.irAlHomeKiosquero(
+      sessionMock,
+      null,
+      busquedaFallida,
+      "TODOS"
+    );
 
     // Verificamos que se haya ejecutado el bloque catch y guardado el string del error
     assertThat(mav.getModel().get("errorBusquedaPedido"), equalTo("No se encontraron pedidos"));
@@ -239,7 +242,7 @@ public class KiosqHomeControladorTest {
     when(servicioPedidoMock.obtenerPedidosDeLosUsuarios())
       .thenThrow(new PedidoNoEncontradoException("Error general de pedidos"));
 
-    ModelAndView mav = kiosControlador.irAlHomeKiosquero(sessionMock, null, null);
+    ModelAndView mav = kiosControlador.irAlHomeKiosquero(sessionMock, null, null, "TODOS");
 
     assertThat(mav.getModel().get("errorBusquedaPedido"), equalTo("Error general de pedidos"));
   }
@@ -271,5 +274,23 @@ public class KiosqHomeControladorTest {
       .addFlashAttribute("mensajeError", mensajeErrorEsperado);
 
     assertThat(mav.getViewName(), equalToIgnoringCase("redirect:/homeKiosquero"));
+  }
+
+  @Test
+  public void siNoSeEspecificaRetiroDebeUsarHoyComoDefault() {
+    when(sessionMock.getAttribute("USUARIO")).thenReturn(usuarioMock);
+    when(sessionMock.getAttribute("ROL")).thenReturn("KIOSQUERO");
+
+    when(pedidoMock.getId()).thenReturn(1L);
+    when(pedidoMock.getFechaRetiro()).thenReturn(java.time.LocalDate.now());
+
+    List<Pedido> pedidos = List.of(pedidoMock);
+    when(servicioPedidoMock.obtenerPedidosDeLosUsuarios()).thenReturn(pedidos);
+
+    ModelAndView mav = kiosControlador.irAlHomeKiosquero(sessionMock, null, null, null);
+
+    assertThat(mav.getModel().get("retiroActual"), equalTo("HOY"));
+    List<Pedido> pedidosObtenidos = (List<Pedido>) mav.getModel().get("pedidosClientes");
+    assertThat(pedidosObtenidos, hasSize(1));
   }
 }
