@@ -52,7 +52,7 @@ document.querySelectorAll(".celda-editable").forEach((celda) => {
         const nuevoId = select.value;
 
         if (!nuevoId) {
-          this.innerHTML = `<span class="badge-categoria"></span>`;
+          this.innerHTML = "<span class=\"badge-categoria\"></span>";
           return;
         }
 
@@ -62,11 +62,11 @@ document.querySelectorAll(".celda-editable").forEach((celda) => {
             nuevoId,
             this,
             () => {
-              this.innerHTML = `<span class="badge-categoria"></span>`;
+              this.innerHTML = "<span class=\"badge-categoria\"></span>";
               this.setAttribute("data-categoria-id", nuevoId);
             },
             () => {
-              this.innerHTML = `<span class="badge-categoria"></span>`;
+              this.innerHTML = "<span class=\"badge-categoria\"></span>";
             }
         );
       };
