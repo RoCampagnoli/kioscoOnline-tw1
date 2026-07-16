@@ -1,5 +1,4 @@
 ﻿// /js/feriados-service.js
-
 /**
  * Obtiene los feriados de Argentina para un año específico desde la API de ArgentinaDatos.
  * Retorna un Array de objetos [{fecha: "YYYY-MM-DD", nombre: "Nombre del Feriado"}]
