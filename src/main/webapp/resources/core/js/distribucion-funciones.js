@@ -1,5 +1,6 @@
 ﻿/* global obtenerFeriados, flatpickr */
 
+// eslint-disable-next-line no-unused-vars -- se invoca desde el atributo onclick del HTML
 function cambiar(btn, delta) {
   const control = btn.parentElement;
   const producto = btn.closest("[data-producto-id]");
@@ -7,8 +8,8 @@ function cambiar(btn, delta) {
   const input = control.querySelector(".qty-input");
   const stock = parseInt(control.dataset.stock);
   const totalActual = Array.from(producto.querySelectorAll(".qty-num")).reduce(
-    (sum, s) => sum + parseInt(s.textContent),
-    0
+      (sum, s) => sum + parseInt(s.textContent),
+      0
   );
   const valorActual = parseInt(span.textContent);
   const nuevoValor = valorActual + delta;
@@ -19,6 +20,7 @@ function cambiar(btn, delta) {
   actualizarEstadoBotonConfirmar();
 }
 
+// eslint-disable-next-line no-unused-vars -- se invoca desde el atributo onclick del HTML
 function eliminarFila(btn) {
   const producto = btn.closest("[data-producto-id]");
   const productoId = producto.dataset.productoId;
@@ -74,16 +76,16 @@ function configurarEnvioFormulario() {
       const inputs = card.querySelectorAll(".qty-input");
 
       const totalPorProducto = Array.from(inputs).reduce(
-        (sum, input) => sum + parseInt(input.value || 0),
-        0
+          (sum, input) => sum + parseInt(input.value || 0),
+          0
       );
 
       if (totalPorProducto === 0) {
         todosLosProductosTienenCantidad = false;
 
         const nombreProd = card
-          .querySelector(".producto-nombre")
-          .textContent.trim();
+            .querySelector(".producto-nombre")
+            .textContent.trim();
         productosSinAsignar.push(nombreProd);
       }
     });
@@ -96,25 +98,25 @@ function configurarEnvioFormulario() {
 
       const nuevaAlerta = document.createElement("div");
       nuevaAlerta.className =
-        "alerta-mensaje alerta-error d-flex align-items-center gap-2";
+          "alerta-mensaje alerta-error d-flex align-items-center gap-2";
 
-      let mensajeError = "";
+      let mensajeTexto = "";
 
       if (!tieneFecha && !todosLosProductosTienenCantidad) {
-        mensajeError =
-          "Debe seleccionar una fecha de retiro y asignar cantidades para todos los productos de la lista.";
+        mensajeTexto =
+            "Debe seleccionar una fecha de retiro y asignar cantidades para todos los productos de la lista.";
       } else if (!tieneFecha) {
-        mensajeError =
-          "Por favor, seleccione la fecha de retiro en el calendario antes de continuar.";
+        mensajeTexto =
+            "Por favor, seleccione la fecha de retiro en el calendario antes de continuar.";
         if (fechaInput) {
           fechaInput.focus();
         }
       } else {
         if (productosSinAsignar.length === 1) {
-          mensajeError = `Debe asignar al menos una unidad para: "". Si no lo quiere, use el botón "Eliminar producto".`;
+          mensajeTexto = `Debe asignar al menos una unidad para: "${productosSinAsignar[0]}". Si no lo quiere, use el botón "Eliminar producto".`;
         } else {
-          mensajeError =
-            "Todos los productos del carrito deben tener al menos una unidad distribuida. Elimine los que no desee llevar.";
+          mensajeTexto =
+              "Todos los productos del carrito deben tener al menos una unidad distribuida. Elimine los que no desee llevar.";
         }
       }
 
@@ -122,7 +124,7 @@ function configurarEnvioFormulario() {
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="20" height="20">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
         </svg>
-        <span></span>
+        <span>${mensajeTexto}</span>
       `;
 
       const banner = document.querySelector(".banner-titulos");
@@ -135,6 +137,7 @@ function configurarEnvioFormulario() {
   });
 }
 
+// eslint-disable-next-line no-unused-vars -- se invoca desde el atributo onclick del HTML
 function guardarYVolverAlHome() {
   const form = document.getElementById("formDistribucion");
   if (!form) {
@@ -153,13 +156,13 @@ function guardarYVolverAlHome() {
     method: "POST",
     body: params
   })
-    .then(() => {
-      window.location.href = "/spring/home";
-    })
-    .catch((err) => {
-      console.error("Error al guardar el borrador:", err);
-      window.location.href = "/spring/home";
-    });
+      .then(() => {
+        window.location.href = "/spring/home";
+      })
+      .catch((err) => {
+        console.error("Error al guardar el borrador:", err);
+        window.location.href = "/spring/home";
+      });
 }
 
 function inicializarPagina() {
@@ -197,7 +200,7 @@ async function inicializarFlatpickr() {
     onDayCreate: function (dObj, dStr, fp, dayElem) {
       const offset = dayElem.dateObj.getTimezoneOffset();
       const localDate = new Date(
-        dayElem.dateObj.getTime() - offset * 60 * 1000
+          dayElem.dateObj.getTime() - offset * 60 * 1000
       );
       const fechaString = localDate.toISOString().split("T")[0];
 
