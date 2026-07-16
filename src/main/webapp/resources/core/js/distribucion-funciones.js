@@ -1,4 +1,5 @@
 /* global flatpickr, obtenerFeriados, FeriadosService */
+
 /* eslint-disable no-unused-vars */
 function cambiar(btn, delta) {
   const control = btn.parentElement;
@@ -22,7 +23,7 @@ function eliminarFila(btn) {
   const productoId = producto.dataset.productoId;
   fetch("/spring/carrito/eliminar", {
     method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    headers: {"Content-Type": "application/x-www-form-urlencoded"},
     body: "productoId=" + productoId
   }).then(() => {
     producto.remove();
@@ -130,7 +131,7 @@ function configurarEnvioFormulario() {
       }
 
       // Scroll suave hacia arriba para ver el error
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({top: 0, behavior: "smooth"});
     }
   });
 }
@@ -186,10 +187,10 @@ async function inicializarFlatpickr() {
     dateFormat: "Y-m-d",
     minDate: "today",
     disable: [
-      function(date) {
+      function (date) {
         return (date.getDay() === 0 || date.getDay() === 6);
       },
-      function(date) {
+      function (date) {
         const offset = date.getTimezoneOffset();
         const localDate = new Date(date.getTime() - (offset * 60 * 1000));
         const fechaString = localDate.toISOString().split("T")[0];
@@ -197,7 +198,7 @@ async function inicializarFlatpickr() {
       }
     ],
     // Evento que se ejecuta cada vez que se renderiza el almanaque flotante
-    onDayCreate: function(dObj, dStr, fp, dayElem) {
+    onDayCreate: function (dObj, dStr, fp, dayElem) {
       // Obtenemos la fecha que se está dibujando en el casillero actual
       const offset = dayElem.dateObj.getTimezoneOffset();
       const localDate = new Date(dayElem.dateObj.getTime() - (offset * 60 * 1000));

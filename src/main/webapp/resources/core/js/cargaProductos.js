@@ -1,4 +1,5 @@
-﻿// --- LÓGICA DE EDICIÓN EXCEL (TABLA) ---
+﻿/* global listaCategorias, bootstrap */
+// --- LÓGICA DE EDICIÓN EXCEL (TABLA) ---
 document.querySelectorAll(".celda-editable").forEach(celda => {
   celda.addEventListener("click", function () {
     if (this.querySelector("input") || this.querySelector("select")) return;
