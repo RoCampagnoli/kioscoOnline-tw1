@@ -1,16 +1,13 @@
-﻿/* global obtenerFeriados, flatpickr */
-
-// eslint-disable-next-line no-unused-vars -- se invoca desde el atributo onclick del HTML
+/* global flatpickr, obtenerFeriados, FeriadosService */
+/* eslint-disable no-unused-vars */
 function cambiar(btn, delta) {
   const control = btn.parentElement;
   const producto = btn.closest("[data-producto-id]");
   const span = control.querySelector(".qty-num");
   const input = control.querySelector(".qty-input");
   const stock = parseInt(control.dataset.stock);
-  const totalActual = Array.from(producto.querySelectorAll(".qty-num")).reduce(
-      (sum, s) => sum + parseInt(s.textContent),
-      0
-  );
+  const totalActual = Array.from(producto.querySelectorAll(".qty-num"))
+    .reduce((sum, s) => sum + parseInt(s.textContent), 0);
   const valorActual = parseInt(span.textContent);
   const nuevoValor = valorActual + delta;
   if (nuevoValor < 0) return;
@@ -20,7 +17,6 @@ function cambiar(btn, delta) {
   actualizarEstadoBotonConfirmar();
 }
 
-// eslint-disable-next-line no-unused-vars -- se invoca desde el atributo onclick del HTML
 function eliminarFila(btn) {
   const producto = btn.closest("[data-producto-id]");
   const productoId = producto.dataset.productoId;
@@ -51,7 +47,7 @@ function configurarFechaRetiro() {
   const mes = String(manana.getMonth() + 1).padStart(2, "0");
   const dia = String(manana.getDate()).padStart(2, "0");
 
-  fecha.min = `--`;
+  fecha.min = `${anio}-${mes}-${dia}`;
 
   fecha.addEventListener("keydown", (e) => e.preventDefault());
   fecha.addEventListener("paste", (e) => e.preventDefault());
@@ -66,8 +62,10 @@ function configurarEnvioFormulario() {
   form.addEventListener("submit", function (e) {
     const fechaInput = document.getElementById("fechaRetiro");
 
+    // 1. Validar si tiene fecha seleccionada
     const tieneFecha = fechaInput && fechaInput.value.trim() !== "";
 
+    // 2. Validar que CADA tarjeta de producto tenga al menos 1 unidad asignada en total
     const productosCards = document.querySelectorAll("[data-producto-id]");
     let todosLosProductosTienenCantidad = true;
     let productosSinAsignar = [];
@@ -75,48 +73,46 @@ function configurarEnvioFormulario() {
     productosCards.forEach((card) => {
       const inputs = card.querySelectorAll(".qty-input");
 
-      const totalPorProducto = Array.from(inputs).reduce(
-          (sum, input) => sum + parseInt(input.value || 0),
-          0
-      );
+      // Sumamos todas las cantidades asignadas a los hijos para este producto específico
+      const totalPorProducto = Array.from(inputs)
+        .reduce((sum, input) => sum + parseInt(input.value || 0), 0);
 
       if (totalPorProducto === 0) {
         todosLosProductosTienenCantidad = false;
 
-        const nombreProd = card
-            .querySelector(".producto-nombre")
-            .textContent.trim();
+        // Obtenemos el nombre del producto para personalizar la alerta
+        const nombreProd = card.querySelector(".producto-nombre").textContent.trim();
         productosSinAsignar.push(nombreProd);
       }
     });
 
+    // 3. Si falta la fecha o algún producto quedó en 0 total, frenamos el submit
     if (!tieneFecha || !todosLosProductosTienenCantidad) {
-      e.preventDefault();
+      e.preventDefault(); // Evita que se envíe el formulario
 
+      // Limpiamos alertas viejas para no acumularlas
       const alertasViejas = document.querySelectorAll(".alerta-mensaje");
-      alertasViejas.forEach((alerta) => alerta.remove());
+      alertasViejas.forEach(alerta => alerta.remove());
 
+      // Creamos la nueva alerta
       const nuevaAlerta = document.createElement("div");
-      nuevaAlerta.className =
-          "alerta-mensaje alerta-error d-flex align-items-center gap-2";
+      nuevaAlerta.className = "alerta-mensaje alerta-error d-flex align-items-center gap-2";
 
-      let mensajeTexto = "";
+      let mensajeError = "";
 
       if (!tieneFecha && !todosLosProductosTienenCantidad) {
-        mensajeTexto =
-            "Debe seleccionar una fecha de retiro y asignar cantidades para todos los productos de la lista.";
+        mensajeError = "Debe seleccionar una fecha de retiro y asignar cantidades para todos los productos de la lista.";
       } else if (!tieneFecha) {
-        mensajeTexto =
-            "Por favor, seleccione la fecha de retiro en el calendario antes de continuar.";
+        mensajeError = "Por favor, seleccione la fecha de retiro en el calendario antes de continuar.";
         if (fechaInput) {
-          fechaInput.focus();
+          fechaInput.focus(); // Abre automáticamente el almanaque
         }
       } else {
+        // Alerta súper personalizada y amigable
         if (productosSinAsignar.length === 1) {
-          mensajeTexto = `Debe asignar al menos una unidad para: "${productosSinAsignar[0]}". Si no lo quiere, use el botón "Eliminar producto".`;
+          mensajeError = `Debe asignar al menos una unidad para: "${productosSinAsignar[0]}". Si no lo quiere, use el botón "Eliminar producto".`;
         } else {
-          mensajeTexto =
-              "Todos los productos del carrito deben tener al menos una unidad distribuida. Elimine los que no desee llevar.";
+          mensajeError = "Todos los productos del carrito deben tener al menos una unidad distribuida. Elimine los que no desee llevar.";
         }
       }
 
@@ -124,20 +120,21 @@ function configurarEnvioFormulario() {
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="20" height="20">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
         </svg>
-        <span>${mensajeTexto}</span>
+        <span>${mensajeError}</span>
       `;
 
+      // Insertamos la alerta de error justo debajo del banner de títulos
       const banner = document.querySelector(".banner-titulos");
       if (banner) {
         banner.insertAdjacentElement("afterend", nuevaAlerta);
       }
 
+      // Scroll suave hacia arriba para ver el error
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   });
 }
 
-// eslint-disable-next-line no-unused-vars -- se invoca desde el atributo onclick del HTML
 function guardarYVolverAlHome() {
   const form = document.getElementById("formDistribucion");
   if (!form) {
@@ -145,10 +142,11 @@ function guardarYVolverAlHome() {
     return;
   }
 
+  // Enviamos los datos usando URLSearchParams filtrando solo los inputs de cantidades
   const params = new URLSearchParams();
   const inputs = form.querySelectorAll(".qty-input");
 
-  inputs.forEach((input) => {
+  inputs.forEach(input => {
     params.append(input.name, input.value);
   });
 
@@ -156,13 +154,13 @@ function guardarYVolverAlHome() {
     method: "POST",
     body: params
   })
-      .then(() => {
-        window.location.href = "/spring/home";
-      })
-      .catch((err) => {
-        console.error("Error al guardar el borrador:", err);
-        window.location.href = "/spring/home";
-      });
+    .then(() => {
+      window.location.href = "/spring/home";
+    })
+    .catch((err) => {
+      console.error("Error al guardar el borrador:", err);
+      window.location.href = "/spring/home";
+    });
 }
 
 function inicializarPagina() {
@@ -180,32 +178,35 @@ async function inicializarFlatpickr() {
   const anioActual = new Date().getFullYear();
   const feriadosArgentina = await obtenerFeriados(anioActual);
 
-  const fechasFeriados = feriadosArgentina.map((f) => f.fecha);
+  // Obtenemos solo el array de fechas string para el validador de disable de Flatpickr
+  const fechasFeriados = feriadosArgentina.map(f => f.fecha);
 
   flatpickr(fechaInput, {
     locale: "es",
     dateFormat: "Y-m-d",
     minDate: "today",
     disable: [
-      function (date) {
-        return date.getDay() === 0 || date.getDay() === 6;
+      function(date) {
+        return (date.getDay() === 0 || date.getDay() === 6);
       },
-      function (date) {
+      function(date) {
         const offset = date.getTimezoneOffset();
-        const localDate = new Date(date.getTime() - offset * 60 * 1000);
+        const localDate = new Date(date.getTime() - (offset * 60 * 1000));
         const fechaString = localDate.toISOString().split("T")[0];
         return fechasFeriados.includes(fechaString);
       }
     ],
-    onDayCreate: function (dObj, dStr, fp, dayElem) {
+    // Evento que se ejecuta cada vez que se renderiza el almanaque flotante
+    onDayCreate: function(dObj, dStr, fp, dayElem) {
+      // Obtenemos la fecha que se está dibujando en el casillero actual
       const offset = dayElem.dateObj.getTimezoneOffset();
-      const localDate = new Date(
-          dayElem.dateObj.getTime() - offset * 60 * 1000
-      );
+      const localDate = new Date(dayElem.dateObj.getTime() - (offset * 60 * 1000));
       const fechaString = localDate.toISOString().split("T")[0];
 
-      const feriado = feriadosArgentina.find((f) => f.fecha === fechaString);
+      // Buscamos si coincide con un feriado
+      const feriado = feriadosArgentina.find(f => f.fecha === fechaString);
       if (feriado) {
+        // Le añadimos un atributo html para que al pasar el mouse diga el nombre del feriado
         dayElem.setAttribute("title", feriado.nombre);
         dayElem.classList.add("dia-feriado-tooltip");
       }

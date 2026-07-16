@@ -1,7 +1,5 @@
-﻿/* global listaCategorias, bootstrap */
-
-// --- LÓGICA DE EDICIÓN EXCEL (TABLA) ---
-document.querySelectorAll(".celda-editable").forEach((celda) => {
+﻿// --- LÓGICA DE EDICIÓN EXCEL (TABLA) ---
+document.querySelectorAll(".celda-editable").forEach(celda => {
   celda.addEventListener("click", function () {
     if (this.querySelector("input") || this.querySelector("select")) return;
 
@@ -21,14 +19,11 @@ document.querySelectorAll(".celda-editable").forEach((celda) => {
       const idCategoriaActual = this.getAttribute("data-categoria-id");
 
       if (listaCategorias.length === 0) {
-        mostrarToast(
-            "❌ No hay categorías disponibles para seleccionar",
-            "#e53e3e"
-        );
+        mostrarToast("❌ No hay categorías disponibles para seleccionar", "#e53e3e");
         return;
       }
 
-      listaCategorias.forEach((cat) => {
+      listaCategorias.forEach(cat => {
         const opt = document.createElement("option");
         opt.value = cat.id;
         opt.text = cat.nombreCategoria;
@@ -50,25 +45,22 @@ document.querySelectorAll(".celda-editable").forEach((celda) => {
         guardadoEnProgreso = true;
 
         const nuevoId = select.value;
+        const textoSelect = select.options[select.selectedIndex].text;
 
         if (!nuevoId) {
-          this.innerHTML = "<span class=\"badge-categoria\"></span>";
+          this.innerHTML = `<span class="badge-categoria">${select.options[0].text}</span>`;
           return;
         }
 
-        enviarCambioAlServidor(
-            id,
-            campo,
-            nuevoId,
-            this,
-            () => {
-              this.innerHTML = "<span class=\"badge-categoria\"></span>";
-              this.setAttribute("data-categoria-id", nuevoId);
-            },
-            () => {
-              this.innerHTML = "<span class=\"badge-categoria\"></span>";
-            }
-        );
+        enviarCambioAlServidor(id, campo, nuevoId, this, () => {
+          this.innerHTML = `<span class="badge-categoria">${textoSelect}</span>`;
+          this.setAttribute("data-categoria-id", nuevoId);
+        }, () => {
+          // Si falla, restablecemos el texto original buscando en listaCategorias
+          const catPrevia = listaCategorias.find(c => String(c.id) === String(valorOriginal));
+          const textoPrevio = catPrevia ? catPrevia.nombreCategoria : "Sin Categoría";
+          this.innerHTML = `<span class="badge-categoria">${textoPrevio}</span>`;
+        });
       };
 
       // Para evitar conflictos, priorizamos el cambio y si se pierde el foco sin cambiar, ejecutamos blur
@@ -80,10 +72,10 @@ document.querySelectorAll(".celda-editable").forEach((celda) => {
           }
         }, 100);
       });
+
     } else {
       const input = document.createElement("input");
-      input.type =
-          campo === "precio" || campo === "cantidad" ? "number" : "text";
+      input.type = (campo === "precio" || campo === "cantidad") ? "number" : "text";
       if (campo === "precio") input.step = "0.01";
 
       input.className = "input-edicion-tabla";
@@ -101,10 +93,7 @@ document.querySelectorAll(".celda-editable").forEach((celda) => {
 
         const nuevoValor = input.value.trim();
 
-        if (
-            (campo === "nombre" || campo === "precio" || campo === "cantidad") &&
-            nuevoValor === ""
-        ) {
+        if ((campo === "nombre" || campo === "precio" || campo === "cantidad") && nuevoValor === "") {
           mostrarToast("❌ Este campo es obligatorio", "#e53e3e");
           this.innerText = valorOriginal;
           return;
@@ -115,18 +104,11 @@ document.querySelectorAll(".celda-editable").forEach((celda) => {
           return;
         }
 
-        enviarCambioAlServidor(
-            id,
-            campo,
-            nuevoValor,
-            this,
-            () => {
-              this.innerText = nuevoValor;
-            },
-            () => {
-              this.innerText = valorOriginal;
-            }
-        );
+        enviarCambioAlServidor(id, campo, nuevoValor, this, () => {
+          this.innerText = nuevoValor;
+        }, () => {
+          this.innerText = valorOriginal;
+        });
       };
 
       input.addEventListener("blur", terminarEdicion);
@@ -139,14 +121,7 @@ document.querySelectorAll(".celda-editable").forEach((celda) => {
   });
 });
 
-function enviarCambioAlServidor(
-    id,
-    campo,
-    valor,
-    celdaHtml,
-    exitoCallback,
-    errorCallback
-) {
+function enviarCambioAlServidor(id, campo, valor, celdaHtml, exitoCallback, errorCallback) {
   const formData = new FormData();
   formData.append("id", id);
   formData.append("campo", campo);
@@ -157,101 +132,91 @@ function enviarCambioAlServidor(
     method: "POST",
     body: formData
   })
-      .then((response) => {
-        if (!response.ok) {
-          return response.json().then((err) => {
-            throw new Error(err.mensaje || "Error al procesar la solicitud");
-          });
-        }
-        return response.json();
-      })
-      .then((data) => {
-        if (data.exito) {
-          exitoCallback();
-          mostrarToast("✔️ Guardado exitosamente", "#2f855a");
-        } else {
-          errorCallback();
-          mostrarToast("❌ " + data.mensaje, "#e53e3e");
-        }
-      })
-      .catch((error) => {
+    .then(response => {
+      if (!response.ok) {
+        return response.json().then(err => {
+          throw new Error(err.mensaje || "Error al procesar la solicitud");
+        });
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.exito) {
+        exitoCallback();
+        mostrarToast("✔️ Guardado exitosamente", "#2f855a");
+      } else {
         errorCallback();
-        mostrarToast(
-            error.message.includes("Error")
-                ? error.message
-                : "❌ Error de conexión con el servidor",
-            "#e53e3e"
-        );
-      });
+        mostrarToast("❌ " + data.mensaje, "#e53e3e");
+      }
+    })
+    .catch(error => {
+      errorCallback();
+      mostrarToast(error.message.includes("Error") ? error.message : "❌ Error de conexión con el servidor", "#e53e3e");
+    });
 }
 
 // --- LÓGICA DE SUBIDA DE IMAGEN INDIVIDUAL ---
 let modalImagenInstancia = null;
 
-// eslint-disable-next-line no-unused-vars -- se invoca desde el atributo onclick del HTML
 function abrirModalImagen(productoId) {
   document.getElementById("cambiarImagenProductoId").value = productoId;
   document.getElementById("nuevaImagenFile").value = "";
   document.getElementById("quitarFondoImgRapida").checked = false;
 
-  modalImagenInstancia = new bootstrap.Modal(
-      document.getElementById("cambiarImagenModal")
-  );
+  modalImagenInstancia = new bootstrap.Modal(document.getElementById("cambiarImagenModal"));
   modalImagenInstancia.show();
 }
 
-document
-    .getElementById("btnGuardarNuevaImagen")
-    .addEventListener("click", function () {
-      const id = document.getElementById("cambiarImagenProductoId").value;
-      const inputImg = document.getElementById("nuevaImagenFile");
-      const quitarFondo = document.getElementById("quitarFondoImgRapida").checked;
+document.getElementById("btnGuardarNuevaImagen").addEventListener("click", function () {
+  const id = document.getElementById("cambiarImagenProductoId").value;
+  const inputImg = document.getElementById("nuevaImagenFile");
+  const quitarFondo = document.getElementById("quitarFondoImgRapida").checked;
 
-      if (inputImg.files.length === 0) {
-        mostrarToast("❌ Por favor, selecciona una imagen", "#e53e3e");
-        return;
+  if (inputImg.files.length === 0) {
+    mostrarToast("❌ Por favor, selecciona una imagen", "#e53e3e");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("id", id);
+  formData.append("imagen", inputImg.files[0]);
+  formData.append("quitarFondo", quitarFondo);
+
+  this.disabled = true;
+  this.innerText = "Subiendo...";
+
+  fetch("productosKiosquero/cambiar-imagen", {
+    method: "POST",
+    body: formData
+  })
+    .then(res => {
+      if (!res.ok) {
+        return res.json().then(err => {
+          throw new Error(err.mensaje || "Error al subir la imagen");
+        });
       }
-
-      const formData = new FormData();
-      formData.append("id", id);
-      formData.append("imagen", inputImg.files[0]);
-      formData.append("quitarFondo", quitarFondo);
-
-      this.disabled = true;
-      this.innerText = "Subiendo...";
-
-      fetch("productosKiosquero/cambiar-imagen", {
-        method: "POST",
-        body: formData
-      })
-          .then((res) => {
-            if (!res.ok) {
-              return res.json().then((err) => {
-                throw new Error(err.mensaje || "Error al subir la imagen");
-              });
-            }
-            return res.json();
-          })
-          .then((data) => {
-            if (data.exito) {
-              const previewImg = document.getElementById("img-preview-" + id);
-              if (previewImg) {
-                previewImg.src = data.nuevaUrl;
-              }
-              modalImagenInstancia.hide();
-              mostrarToast("✔️ Imagen actualizada", "#2f855a");
-            } else {
-              mostrarToast("❌ " + data.mensaje, "#e53e3e");
-            }
-          })
-          .catch((error) => {
-            mostrarToast("❌ " + error.message, "#e53e3e");
-          })
-          .finally(() => {
-            this.disabled = false;
-            this.innerText = "Subir";
-          });
+      return res.json();
+    })
+    .then(data => {
+      if (data.exito) {
+        const previewImg = document.getElementById("img-preview-" + id);
+        if (previewImg) {
+          previewImg.src = data.nuevaUrl;
+        }
+        modalImagenInstancia.hide();
+        mostrarToast("✔️ Imagen actualizada", "#2f855a");
+      } else {
+        mostrarToast("❌ " + data.mensaje, "#e53e3e");
+      }
+    })
+    .catch(error => {
+      mostrarToast("❌ " + error.message, "#e53e3e");
+    })
+    .finally(() => {
+      this.disabled = false;
+      this.innerText = "Subir";
     });
+});
 
 /*
 // --- LÓGICA PARA ELIMINAR PRODUCTO (MODAL INTERACTIVO) ---
